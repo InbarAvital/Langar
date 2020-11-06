@@ -1,0 +1,30 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/cygdrive/c/Users/Inbar/CLionProjects/MyLanguage/Langar/General.h
+
+/cygdrive/c/Users/Inbar/CLionProjects/MyLanguage/Langar/Lexer/Lexer.c
+Lexer.h
+/cygdrive/c/Users/Inbar/CLionProjects/MyLanguage/Langar/Lexer/Lexer.h
+
+/cygdrive/c/Users/Inbar/CLionProjects/MyLanguage/Langar/Lexer/Lexer.h
+../Tokenizer/Tokenizer.h
+/cygdrive/c/Users/Inbar/CLionProjects/MyLanguage/Langar/Tokenizer/Tokenizer.h
+ctype.h
+-
+
+/cygdrive/c/Users/Inbar/CLionProjects/MyLanguage/Langar/Tokenizer/Tokenizer.h
+../General.h
+/cygdrive/c/Users/Inbar/CLionProjects/MyLanguage/Langar/General.h
+string.h
+-
+stdio.h
+-
+stdlib.h
+-
+

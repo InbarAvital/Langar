@@ -1,0 +1,12 @@
+//
+// Created by Inbar on 06/11/2020.
+//
+
+#ifndef MYLANGUAGE_GENERAL_H
+#define MYLANGUAGE_GENERAL_H
+
+#define WORD_AMOUNT 100
+#define WORD_SIZE 100
+#define LINE_AMOUNT 10000
+
+#endif //MYLANGUAGE_GENERAL_H

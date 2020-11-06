@@ -1,56 +1,52 @@
 //
 // Created by Inbar
 //
-#include <string.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include "../GeneralStructs.h"
-#include "Lexer.h"
+#include "Tokenizer.h"
 
 /**
  * @param text - code lines.
- * @return - a code (an array of lines) - after lexsering.
+ * @return - a code (an array of lines) - after Tokenizing.
  */
-struct Code* lexer(char* text) {
+TokCode* tokenize(char* text) {
 
     // initializing lines for code (allocating)
-    struct Code *lexered = (struct Code*) malloc(sizeof(struct Code));
+    TokCode *tokenized = (TokCode*) malloc(sizeof(TokCode));
     int i, j;
-    lexered->lines = (struct Line*) malloc(LINE_AMOUNT * sizeof(struct Line));
+    tokenized->lines = (TokLine*) malloc(LINE_AMOUNT * sizeof(TokLine));
     for(i = 0; i < LINE_AMOUNT; i++) {
-        lexered->lines[i].words = (char **) malloc(WORD_AMOUNT * sizeof(char *));
-        lexered->lines[i].size = 0;
+        tokenized->lines[i].words = (char **) malloc(WORD_AMOUNT * sizeof(char *));
+        tokenized->lines[i].size = 0;
     }
-    lexered->size = 0;
+    tokenized->size = 0;
 
     // transforming from text(strings) to "Lines"
     int latest = 0;
     for(i = 0; i < strlen(text); i++) {
         if(text[i] == '\n') {
-            lexered->lines[lexered->size].words[0] = (char *) malloc(WORD_SIZE * sizeof(char));
-            strcpy(lexered->lines[lexered->size].words[0], substring(text, latest, i-1));
-            lexered->lines[lexered->size].size = 1;
+            tokenized->lines[tokenized->size].words[0] = (char *) malloc(WORD_SIZE * sizeof(char));
+            strcpy(tokenized->lines[tokenized->size].words[0], substring(text, latest, i-1));
+            tokenized->lines[tokenized->size].size = 1;
             latest = i+1;
-            lexered->size = lexered->size + 1;
+            tokenized->size = tokenized->size + 1;
         }
     }
     // for the case we did not end the text with \n
     if(latest != i) {
-        lexered->lines[lexered->size].words[0] = (char *) malloc(WORD_SIZE * sizeof(char));
-        strcpy(lexered->lines[lexered->size].words[0], substring(text, latest, i-1));
-        lexered->lines[lexered->size].size = 1;
-        lexered->size = lexered->size + 1;
+        tokenized->lines[tokenized->size].words[0] = (char *) malloc(WORD_SIZE * sizeof(char));
+        strcpy(tokenized->lines[tokenized->size].words[0], substring(text, latest, i-1));
+        tokenized->lines[tokenized->size].size = 1;
+        tokenized->size = tokenized->size + 1;
     }
 
     // the chars I split my lines by
-    char* splitBy = " (){}[]<>!=\";";
+    char* splitBy = " +-/*(){}[]<>!=\";";
 
     // sending each line to line lexer
-    for(i = 0; i < lexered->size; i++) {
-        lexered->lines[i] = lexerLine(&lexered->lines[i], splitBy);
+    for(i = 0; i < tokenized->size; i++) {
+        tokenized->lines[i] = tokenizeLine(&tokenized->lines[i], splitBy);
     }
 
-    return lexered;
+    return tokenized;
 }
 
 /**
@@ -58,18 +54,18 @@ struct Code* lexer(char* text) {
  *                  ~ an array of strings
  *                  ~ an int indicating how many strings are in the array.
  * @param toSplit - a string in which each char is a char we want to split our line by.
- * @return - a new line, lexered as requested (according to "tosplit")
+ * @return - a new line, tokenized as requested (according to "tosplit")
  */
-struct Line lexerLine(struct Line *line, char* toSplit) {
-    struct Line lexered = *line;
+TokLine tokenizeLine(TokLine *line, char* toSplit) {
+    TokLine tokenized = *line;
     int i;
     for(i = 0; i < strlen(toSplit); i++) {
-        lexered = split(&lexered, toSplit[i]);
+        tokenized = split(&tokenized, toSplit[i]);
     }
     // get rid of spaces
-    lexered = delString(&lexered, " ");
+    tokenized = delString(&tokenized, " ");
 
-    return lexered;
+    return tokenized;
 }
 
 /**
@@ -81,12 +77,12 @@ struct Line lexerLine(struct Line *line, char* toSplit) {
  *         from the rest of the words. It does not delete them since some
  *         chars we want to keep for later.
  */
-struct Line split(struct Line *line, char ch) {
+TokLine split(TokLine *line, char ch) {
     int i, j;
 
     // we will use this var in order to know where was the latest split
     int latest = 0;
-    struct Line new_line;
+    TokLine new_line;
 
     // setting initial values for the new line
     new_line.words = (char**) malloc(WORD_AMOUNT * sizeof(char*));
@@ -106,7 +102,7 @@ struct Line split(struct Line *line, char ch) {
                     strcpy(new_line.words[new_line.size], substring(line->words[j], latest, i-1));
                     new_line.size += 1;
                 }
-                // second part of the word
+                // second the char
                 new_line.words[new_line.size] = (char *) malloc(WORD_SIZE * sizeof(char));
                 strcpy(new_line.words[new_line.size], substring(line->words[j], i, i));
                 new_line.size += 1;
@@ -143,18 +139,18 @@ char* substring(char* str, int start, int finish) {
     for(i = start; i <= finish; i++) {
         substr[i-start] = str[i];
     }
-    if(substr[i] != '\0') {
-        substr[i] = '\0';
+    if(substr[i-start] != '\0') {
+        substr[i-start] = '\0';
     }
     return substr;
 }
 
-struct Line delString(struct Line* line, char* str) {
+TokLine delString(TokLine* line, char* str) {
     int i;
 
     // we will use this var in order to know where was the latest split
     int latest = 0;
-    struct Line new_line;
+    TokLine new_line;
 
     // setting initial values for the new line
     new_line.words = (char**) malloc(WORD_AMOUNT * sizeof(char*));
