@@ -1,1 +1,0 @@
-/usr/bin/cc -g  -Wl,--enable-auto-import CMakeFiles/MyLanguage.dir/Parser/Parser.c.o CMakeFiles/MyLanguage.dir/Tokenizer/Tokenizer.c.o CMakeFiles/MyLanguage.dir/Main.c.o CMakeFiles/MyLanguage.dir/ToAssembly.c.o CMakeFiles/MyLanguage.dir/Lexer/Lexer.c.o  -o MyLanguage.exe -Wl,--out-implib,libMyLanguage.dll.a -Wl,--major-image-version,0,--minor-image-version,0 
