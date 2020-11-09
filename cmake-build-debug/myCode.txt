@@ -1,0 +1,9 @@
+int x = 3;
+int y;
+if(x==3) {
+    y=x+1;
+}
+int i;
+for(int i=0; i<y; i++) {
+    x++;
+}

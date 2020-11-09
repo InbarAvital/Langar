@@ -13,7 +13,7 @@ typedef struct LexeredObjects {
     char* token;
     /**
      * Possible Tokens:
-     *      state, type, number, sign(+-/*()[]<>!="{};), loop, condition, string
+     *      state, type, number, sign(+-/*()[]<>!="{};), loop, condition, string, cut(;)
      */
 } LexObj;
 
@@ -30,5 +30,8 @@ typedef struct LexeredCodes {
 LexObj* lexerWord(char* word);
 LexLine* lexerLine(TokLine* line);
 LexCode* lexer(TokCode* code);
+LexCode* copyLexCode(LexCode* source);
+LexLine* copyLexLine(LexLine* source);
+LexObj* copyLexObj(LexObj* source);
 
 #endif //MYLANGUAGE_LEXER_H

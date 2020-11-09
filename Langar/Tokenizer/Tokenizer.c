@@ -39,7 +39,7 @@ TokCode* tokenize(char* text) {
     }
 
     // the chars I split my lines by
-    char* splitBy = " +-/*(){}[]<>!=\";";
+    char* splitBy= " +-/*(){}[]<>!=;";
 
     // sending each line to line lexer
     for(i = 0; i < tokenized->size; i++) {
@@ -64,6 +64,8 @@ TokLine tokenizeLine(TokLine *line, char* toSplit) {
     }
     // get rid of spaces
     tokenized = delString(&tokenized, " ");
+    //get rid of \r which appears before the \n. We don't need it.
+    tokenized = delString(&tokenized, "\r");
 
     return tokenized;
 }

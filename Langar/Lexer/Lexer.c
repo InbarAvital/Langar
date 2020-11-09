@@ -47,10 +47,11 @@ LexObj* lexerWord(char* word) {
         return lexered;
     }
 
-    // checks if this is a type(int, string, char, double, float, bool)
+    // checks if this is a type(int, string, char, double, float, bool, void)
     if (!strcmp(word, "int") || !strcmp(word, "string") ||
         !strcmp(word, "char") || !strcmp(word, "double") ||
-        !strcmp(word, "float") || !strcmp(word, "bool")) {
+        !strcmp(word, "float") || !strcmp(word, "bool") ||
+        !strcmp(word, "void")) {
         strcpy(lexered->token, "type");
         return lexered;
     }
@@ -73,14 +74,19 @@ LexObj* lexerWord(char* word) {
         return lexered;
     }
 
+    // checks if cut
+    if(!strcmp(word, ";")) {
+        strcpy(lexered->token, "cut");
+        return lexered;
+    }
+
     // checks if this is a sign
     if (!strcmp(word, "+") || !strcmp(word, "-") ||
             !strcmp(word, "/") || !strcmp(word, "*") ||
             !strcmp(word, "(") || !strcmp(word, ")") ||
             !strcmp(word, "[") || !strcmp(word, "]") ||
             !strcmp(word, "<") || !strcmp(word, ">") ||
-            !strcmp(word, "!") || !strcmp(word, ";") ||
-            !strcmp(word, "\"")) {
+            !strcmp(word, "!") || !strcmp(word, "\"")) {
         strcpy(lexered->token, "sign");
         return lexered;
     }
