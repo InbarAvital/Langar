@@ -80,14 +80,19 @@ LexObj* lexerWord(char* word) {
         return lexered;
     }
 
-    // checks if this is a sign
-    if (!strcmp(word, "+") || !strcmp(word, "-") ||
-            !strcmp(word, "/") || !strcmp(word, "*") ||
-            !strcmp(word, "(") || !strcmp(word, ")") ||
+    // checks if this is a normal sign
+    if (!strcmp(word, "(") || !strcmp(word, ")") ||
             !strcmp(word, "[") || !strcmp(word, "]") ||
             !strcmp(word, "<") || !strcmp(word, ">") ||
             !strcmp(word, "!") || !strcmp(word, "\"")) {
-        strcpy(lexered->token, "sign");
+        strcpy(lexered->token, "n_sign");
+        return lexered;
+    }
+
+    // checks if this is a mathematical sign
+    if (!strcmp(word, "+") || !strcmp(word, "-") ||
+        !strcmp(word, "/") || !strcmp(word, "*")) {
+        strcpy(lexered->token, "m_sign");
         return lexered;
     }
 

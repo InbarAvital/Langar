@@ -7,4 +7,7 @@
 
 #import "../Lexer/Lexer.h"
 
+void identifyCode(LexCode* code);
+void identifyLine(LexLine* line);
+
 #endif //MYLANGUAGE_IDENTIFIER_H

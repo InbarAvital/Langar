@@ -6,13 +6,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "Organizer/Organizer.h"
+#include "Identifier/Identifier.h"
+#include "Compiler/Compiler.h"
+#include "Structs.h"
 
 char* openFile(char* fileName);
+void printLexered(LexCode* code);
 
 // for testing
 int main() {
-    int i, j;
-
     // gets the code from the text file.
     char* fileName = "myCode.txt";
     char* text = openFile(fileName);
@@ -20,10 +22,24 @@ int main() {
     TokCode* code = tokenize(text);
     LexCode* lexered = lexer(code);
     LexCode* organized = organize(lexered);
-    for(i = 0; i < organized->size; i++) {
-        printf("Line %d:\n", i+1);
-        for(j = 0; j < organized->lines[i].size; j++) {
-            printf("value: %s type: %s\n", organized->lines[i].words[j].value, organized->lines[i].words[j].token);
+    identifyCode(organized);
+    Class* class = (Class*)malloc(sizeof(Class));
+    class->vars = (Var *) malloc(VAR_AMOUNT * sizeof(Var));
+    class->name = (char *) malloc(WORD_SIZE * sizeof(char));
+    class->code = copyLexCode(organized)[0];
+    class->varsSize = (int *) malloc(sizeof(int));
+    *class->varsSize = 0;
+    char* assCode = compileClass(class);
+    printLexered(organized);
+    //printf("%s\n", assCode);
+}
+
+void printLexered(LexCode* code) {
+    int i, j;
+    for(i = 0; i < code->size; i++) {
+        printf("Line %d - %s\n", i+1, code->lines[i].type);
+        for(j = 0; j < code->lines[i].size; j++) {
+            printf("value: %s type: %s\n", code->lines[i].words[j].value, code->lines[i].words[j].token);
         }
     }
 }

@@ -10,6 +10,7 @@ What I have so far regarding processing the code given to me:
    * Tokenizer - splits the code to tokens
    * Lexer - take the tokens code and add info
    * Organizer - organize the code to make it easier when we start compiling
+   * Identifier - gives a role to each line
 
 What I have so far regarding the compiler:
    * Starting now :D 
