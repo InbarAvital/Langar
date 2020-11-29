@@ -127,9 +127,10 @@ char* compileExpression(LexLine* expression, Func* func) {
             if(func != NULL) {
                 char* offsetStr[WORD_SIZE];
                 sprintf(offsetStr, "%d", getVar(postfixLine->words[i].value, func)->offset);
-                strcat(asCode, "    push    DWORD PTR [ebp - ");
+                strcat(asCode, "    mov     DWORD PTR [ebp - ");
                 strcat(asCode, offsetStr);
-                strcat(asCode, "]\n");
+                strcat(asCode, "], ebx\n");
+                strcat(asCode, "    push    ebx\n");
             } else {
                 // it is a global var - I will add this option later.
             }

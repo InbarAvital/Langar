@@ -105,7 +105,8 @@ func:
     push    7
     pop     eax
     mov     DWORD PTR [ebp - 8], eax
-    push    DWORD PTR [ebp - 8]
+    mov     DWORD PTR [ebp - 8], ebx
+    push    ebx
     push    1
     pop     eax
     pop     ebx
