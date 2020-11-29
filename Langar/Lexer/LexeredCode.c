@@ -98,3 +98,24 @@ int getBlockOfCodeInt(LexCode* code, int index) {
     return line - 1;
 }
 
+/**
+ * @param code - the code.
+ * @param start - the index of the word we want to start with (including).
+ * @param end - the index of the word we want to finish with (including).
+ * @return the new line from start to end.
+ */
+LexLine* subLine(LexLine* line, int start, int end) {
+    // creates a new line, the one we will send back eventually
+    LexLine* subline = (LexLine*) malloc(sizeof(LexLine*));
+    subline->size = end - start + 1;
+    subline->words = (LexObj*) malloc(subline->size * sizeof(LexObj));
+    subline->type = (char*) malloc(TYPE_SIZE * sizeof(char));
+    strcpy(subline->type, line->type);
+    int i;
+    // sets the lines before the indexed line to stay the same
+    for(i = start; i <= end; i++) {
+        subline->words[i - start] = *copyLexObj(&line->words[i]);
+    }
+    return subline;
+}
+

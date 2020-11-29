@@ -20,48 +20,48 @@ void identifyLine(LexLine* line) {
     line->type = (char*)malloc(TYPE_SIZE * sizeof(char));
     // initializing variable
     if(line->size == 3 &&
-            !strcmp(line->words[0].token, "type") &&
-            !strcmp(line->words[1].token, "string") &&
-            !strcmp(line->words[2].token, "cut")) {
-        strcpy(line->type, "init_var");
+            !strcmp(line->words[0].token, TYPE) &&
+            !strcmp(line->words[1].token, STRING) &&
+            !strcmp(line->words[2].token, CUT)) {
+        strcpy(line->type, INIT_VAR);
         return;
     }
     // putting new value to a variable
     if(line->size >= 4 &&
-            !strcmp(line->words[0].token, "string") &&
-            !strcmp(line->words[1].token, "assign")) {
-        strcpy(line->type, "update_var");
+            !strcmp(line->words[0].token, STRING) &&
+            !strcmp(line->words[1].token, ASSIGN)) {
+        strcpy(line->type, UPDATE_VAR);
         return;
     }
     // if now we have a type, it must be the beginning of a function
-    if(!strcmp(line->words[0].token, "type")) {
-        strcpy(line->type, "init_func");
+    if(!strcmp(line->words[0].token, TYPE)) {
+        strcpy(line->type, INIT_FUNC);
         return;
     }
     // if, else or elif
-    if(!strcmp(line->words[0].token, "condition")) {
-        strcpy(line->type, "condition");
+    if(!strcmp(line->words[0].token, CONDITION)) {
+        strcpy(line->type, CONDITION);
         return;
     }
     // while or for
-    if(!strcmp(line->words[0].token, "loop")) {
-        strcpy(line->type, "loop");
+    if(!strcmp(line->words[0].token, LOOP)) {
+        strcpy(line->type, LOOP);
         return;
     }
     // block
     if(!strcmp(line->words[0].value, "{") || !strcmp(line->words[0].value, "}")) {
-        strcpy(line->type, "block");
+        strcpy(line->type, BLOCK);
         return;
     }
     // init_class
     if(!strcmp(line->words[0].value, "Class")) {
-        strcpy(line->type, "init_class");
+        strcpy(line->type, INIT_CLASS);
         return;
     }
     // return
     if(!strcmp(line->words[0].value, "return")) {
-        strcpy(line->type, "return");
+        strcpy(line->type, RETURN);
         return;
     }
-    strcpy(line->type, "unknown");
+    strcpy(line->type, UNKNOWN);
 }

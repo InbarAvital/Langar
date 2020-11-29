@@ -10,29 +10,29 @@
  */
 LexCode* organize(LexCode* code) {
     LexCode* organized = copyLexCode(code);
-    int i;
+    int i, j;
     for(i = 0; i < organized->size; i++) {
         // if this is a variable that is being assigned, split to 2 lines.
         if(organized->lines[i].size > 3 &&
-                !strcmp(organized->lines[i].words[0].token, "type") &&
+                !strcmp(organized->lines[i].words[0].token, TYPE) &&
                 strcmp(organized->lines[i].words[2].value, "(")) {
             organized = organizeAssign(organized, i);
         }
 
         // a++ and a-- will be turned to a=a+1 and a=a-1
         if(organized->lines[i].size == 4 &&
-                !strcmp(organized->lines[i].words[0].token, "string") &&
+                !strcmp(organized->lines[i].words[0].token, STRING) &&
                 ((!strcmp(organized->lines[i].words[1].value, "+") && !strcmp(organized->lines[i].words[2].value, "+")) ||
                 ((!strcmp(organized->lines[i].words[1].value, "-") && !strcmp(organized->lines[i].words[2].value, "-")))) &&
-                !strcmp(organized->lines[i].words[3].token, "cut")) {
+                !strcmp(organized->lines[i].words[3].token, CUT)) {
             organized->lines[i] = *organizeIncDec(&organized->lines[i]);
         }
 
         // a+=b, a-=b, a*=b, a/=b  ==>  a=a+(b), a=a-(b), a=a*(b), a=a/(b)
         if(organized->lines[i].size > 3 &&
-                !strcmp(organized->lines[i].words[0].token, "string") &&
-                !strcmp(organized->lines[i].words[1].token, "m_sign") &&
-                !strcmp(organized->lines[i].words[2].token, "assign")) {
+                !strcmp(organized->lines[i].words[0].token, STRING) &&
+                !strcmp(organized->lines[i].words[1].token, OPERATOR) &&
+                !strcmp(organized->lines[i].words[2].token, ASSIGN)) {
             organized->lines[i] = *organizeMath(&organized->lines[i]);
         }
 
@@ -41,6 +41,26 @@ LexCode* organize(LexCode* code) {
                 (!strcmp(organized->lines[i].words[organized->lines[i].size - 1].value, "{") ||
                 !strcmp(organized->lines[i].words[organized->lines[i].size - 1].value, "}"))) {
             organized = organizeBlock(organized, i);
+        }
+
+        // &&, ||, ==, !=, <=, >= -----> will become one LexObj
+        for(j = 0; j < organized->lines[i].size - 1; j++) {
+            if((!strcmp(organized->lines[i].words[j].value, "&") &&
+                    !strcmp(organized->lines[i].words[j+1].value, "&")) ||
+                    (!strcmp(organized->lines[i].words[j].value, "|") &&
+                     !strcmp(organized->lines[i].words[j+1].value, "|")) ||
+                    (!strcmp(organized->lines[i].words[j+1].value, "=") &&
+                            (!strcmp(organized->lines[i].words[j].value, "=") ||
+                            !strcmp(organized->lines[i].words[j].value, ">") ||
+                            !strcmp(organized->lines[i].words[j].value, "<") ||
+                            !strcmp(organized->lines[i].words[j].value, "!")))) {
+                organized->lines[i] = *organizeDoubleSigns(&organized->lines[i], j);
+            }
+        }
+
+        // if there is an empty line - delete it.
+        if(organized->lines[i].size == 0) {
+            organized = organizeEmptyLine(organized, i);
         }
     }
 
@@ -86,7 +106,7 @@ LexCode* organizeAssign(LexCode* code, int index) {
     organized->lines[index].words[2].value = (char*) malloc(WORD_SIZE * sizeof(char));
     organized->lines[index].words[2].token = (char*) malloc(WORD_SIZE * sizeof(char));
     strcpy(organized->lines[index].words[2].value, ";");
-    strcpy(organized->lines[index].words[2].token, "cut");
+    strcpy(organized->lines[index].words[2].token, CUT);
     organized->lines[index].size = 3;
     organized->lines[index+1].size = code->lines[index].size - 1;
 
@@ -118,7 +138,7 @@ LexLine* organizeIncDec(LexLine* line) {
     organized->words[1].value = (char*)malloc(WORD_SIZE * sizeof(char));
     organized->words[1].token = (char*)malloc(WORD_SIZE * sizeof(char));
     strcpy(organized->words[1].value, "=");
-    strcpy(organized->words[1].token, "assign");
+    strcpy(organized->words[1].token, ASSIGN);
 
     // third value is also the variable's name
     organized->words[2].value = (char*)malloc(WORD_SIZE * sizeof(char));
@@ -136,13 +156,13 @@ LexLine* organizeIncDec(LexLine* line) {
     organized->words[4].value = (char*)malloc(WORD_SIZE * sizeof(char));
     organized->words[4].token = (char*)malloc(WORD_SIZE * sizeof(char));
     strcpy(organized->words[4].value, "1");
-    strcpy(organized->words[4].token, "number");
+    strcpy(organized->words[4].token, NUMBER);
 
     // sixth value is ;
     organized->words[5].value = (char*)malloc(WORD_SIZE * sizeof(char));
     organized->words[5].token = (char*)malloc(WORD_SIZE * sizeof(char));
     strcpy(organized->words[5].value, ";");
-    strcpy(organized->words[5].token, "cut");
+    strcpy(organized->words[5].token, CUT);
 
     return organized;
 }
@@ -168,7 +188,7 @@ LexLine* organizeMath(LexLine* line) {
     organized->words[1].value = (char*)malloc(WORD_SIZE * sizeof(char));
     organized->words[1].token = (char*)malloc(WORD_SIZE * sizeof(char));
     strcpy(organized->words[1].value, "=");
-    strcpy(organized->words[1].token, "assign");
+    strcpy(organized->words[1].token, ASSIGN);
 
     // third value is also the variable's name
     organized->words[2].value = (char*)malloc(WORD_SIZE * sizeof(char));
@@ -186,7 +206,7 @@ LexLine* organizeMath(LexLine* line) {
     organized->words[4].value = (char*)malloc(WORD_SIZE * sizeof(char));
     organized->words[4].token = (char*)malloc(WORD_SIZE * sizeof(char));
     strcpy(organized->words[4].value, "(");
-    strcpy(organized->words[4].token, "sign");
+    strcpy(organized->words[4].token, SIGN);
 
     // now the rest stay the same
     int i = 0;
@@ -201,11 +221,11 @@ LexLine* organizeMath(LexLine* line) {
     organized->words[organized->size - 2].value = (char*)malloc(WORD_SIZE * sizeof(char));
     organized->words[organized->size - 2].token = (char*)malloc(WORD_SIZE * sizeof(char));
     strcpy(organized->words[organized->size - 2].value, ")");
-    strcpy(organized->words[organized->size - 2].token, "sign");
+    strcpy(organized->words[organized->size - 2].token, SIGN);
     organized->words[organized->size - 1].value = (char*)malloc(WORD_SIZE * sizeof(char));
     organized->words[organized->size - 1].token = (char*)malloc(WORD_SIZE * sizeof(char));
     strcpy(organized->words[organized->size - 1].value, ";");
-    strcpy(organized->words[organized->size - 1].token, "cut");
+    strcpy(organized->words[organized->size - 1].token, CUT);
 
     return organized;
 }
@@ -214,7 +234,7 @@ LexLine* organizeMath(LexLine* line) {
  * int a() { - the { will be in a new line.
  *
  * @param line - the line we want to fix.
- * @return the line after fixing the problem.
+ * @return the code after fixing the problem.
  */
 LexCode* organizeBlock(LexCode* code, int index) {
     LexCode* organized = (LexCode*) malloc(sizeof(LexCode*));
@@ -240,12 +260,103 @@ LexCode* organizeBlock(LexCode* code, int index) {
     organized->lines[index + 1].words[0].value = (char*) malloc(WORD_SIZE * sizeof(char));
     organized->lines[index + 1].words[0].token = (char*) malloc(WORD_SIZE * sizeof(char));
     strcpy(organized->lines[index + 1].words[0].value, "{");
-    strcpy(organized->lines[index + 1].words[0].token, "sign");
+    strcpy(organized->lines[index + 1].words[0].token, SIGN);
     organized->lines[index + 1].size = 1;
 
     // sets the rest of the words to stay the same.
     for(i = index + 1; i < code->size; i++) {
         organized->lines[i+1] = *copyLexLine(&code->lines[i]);
     }
+    return organized;
+}
+
+/**
+ * &&, ||, ==, !=, <=, >= -----> will become one LexObj
+ *
+ * @param line - the line we want to fix.
+ * @return the line after fixing the problem.
+ */
+LexLine* organizeDoubleSigns(LexLine* line, int index) {
+    LexLine* organized = (LexLine*) malloc(sizeof(LexLine));
+    organized->words = (LexObj*) malloc(WORD_AMOUNT * sizeof(LexObj));
+    organized->size = line->size - 1;
+
+    int i = 0;
+    // keeps the beginning of the line the same
+    for(i = 0; i < index; i++) {
+        organized->words[i].value = (char*)malloc(WORD_SIZE * sizeof(char));
+        organized->words[i].token = (char*)malloc(WORD_SIZE * sizeof(char));
+        strcpy(organized->words[i].value, line->words[i].value);
+        strcpy(organized->words[i].token, line->words[i].token);
+    }
+
+    // allocates space
+    organized->words[index].value = (char*)malloc(WORD_SIZE * sizeof(char));
+    organized->words[index].token = (char*)malloc(WORD_SIZE * sizeof(char));
+
+    if(!strcmp(line->words[index].value, "&") &&
+        !strcmp(line->words[index+1].value, "&")) {
+        // combines & and & to one
+        strcpy(organized->words[index].value, "&&");
+        strcpy(organized->words[index].token, AND);
+    } else if(!strcmp(line->words[index].value, "|") &&
+       !strcmp(line->words[index + 1].value, "|")) {
+        // combines | and | to one
+        strcpy(organized->words[index].value, "||");
+        strcpy(organized->words[index].token, OR);
+    }
+    else {
+        if(!strcmp(line->words[index].value, "=")) {
+            // combines = and = to one
+            strcpy(organized->words[index].value, "==");
+            strcpy(organized->words[index].token, CONDITION_ASSIGN);
+        } else if(!strcmp(line->words[index].value, ">")) {
+            // combines < and = to one
+            strcpy(organized->words[index].value, ">=");
+            strcpy(organized->words[index].token, CONDITION_ASSIGN);
+        } else if(!strcmp(line->words[index].value, "<")) {
+            // combines > and = to one
+            strcpy(organized->words[index].value, "<=");
+            strcpy(organized->words[index].token, CONDITION_ASSIGN);
+        } else {
+            // combines ! and = to one
+            strcpy(organized->words[index].value, "!=");
+            strcpy(organized->words[index].token, CONDITION_ASSIGN);
+        }
+    }
+
+    // keeps the end of the line the same
+    for(i = index + 1; i < organized->size; i++) {
+        organized->words[i].value = (char*)malloc(WORD_SIZE * sizeof(char));
+        organized->words[i].token = (char*)malloc(WORD_SIZE * sizeof(char));
+        strcpy(organized->words[i].value, line->words[i + 1].value);
+        strcpy(organized->words[i].token, line->words[i + 1].token);
+    }
+
+    return organized;
+}
+
+/**
+ * deletes empty lines
+ *
+ * @param line - the line we want to delete.
+ * @return the code after fixing the problem.
+ */
+LexCode* organizeEmptyLine(LexCode* code, int index) {
+    LexCode* organized = (LexCode*) malloc(sizeof(LexCode*));
+    organized->lines = (LexLine*) malloc(LINE_AMOUNT * sizeof(LexLine));
+    organized->size = code->size - 1;
+    int i;
+
+    // adds the lines before the indexed line;
+    for(i = 0; i < index; i++) {
+        organized->lines[i] = *copyLexLine(&code->lines[i]);
+    }
+
+    // adds the lines after the indexed line;
+    for(i = index + 1; i < code->size; i++) {
+        organized->lines[i - 1] = *copyLexLine(&code->lines[i]);
+    }
+
     return organized;
 }

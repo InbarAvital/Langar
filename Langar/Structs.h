@@ -12,6 +12,7 @@
 typedef struct Variables {
     char* name;
     char* type; // int, string, bool, double, float
+    int offset;
 } Var;
 
 typedef struct Functions {
@@ -33,15 +34,5 @@ typedef struct Classes {
     Func* funcs; // the functions in the class
     LexCode code;
 } Class;
-
-typedef struct VarToOffset {
-    Var var;
-    int offset;
-} VOMap;
-
-typedef struct Compilers {
-    char* code; // the assembly code
-    VOMap* offset;
-} Compiler;
 
 #endif //MYLANGUAGE_STRUCTS_H

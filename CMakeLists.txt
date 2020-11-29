@@ -17,4 +17,6 @@ add_executable(MyLanguage
         Langar/Compiler/Compiler.c
         Langar/Compiler/Compiler.h
         Langar/Compiler/TemplatesIA32.c
-        Langar/Compiler/TemplatesIA32.h)
+        Langar/Compiler/TemplatesIA32.h
+        Langar/Shunting-yard/ShuntingYard.c
+        )

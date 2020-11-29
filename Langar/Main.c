@@ -8,10 +8,12 @@
 #include "Organizer/Organizer.h"
 #include "Identifier/Identifier.h"
 #include "Compiler/Compiler.h"
+#include "Shunting-yard/ShuntingYard.h"
 #include "Structs.h"
 
 char* openFile(char* fileName);
 void printLexered(LexCode* code);
+void printShuntingYard(LexCode* code);
 
 // for testing
 int main() {
@@ -23,6 +25,7 @@ int main() {
     LexCode* lexered = lexer(code);
     LexCode* organized = organize(lexered);
     identifyCode(organized);
+
     Class* class = (Class*)malloc(sizeof(Class));
     class->vars = (Var *) malloc(VAR_AMOUNT * sizeof(Var));
     class->name = (char *) malloc(WORD_SIZE * sizeof(char));
@@ -30,8 +33,15 @@ int main() {
     class->varsSize = (int *) malloc(sizeof(int));
     *class->varsSize = 0;
     char* assCode = compileClass(class);
-    printLexered(organized);
-    //printf("%s\n", assCode);
+    //printLexered(organized);
+    printf("%s\n", assCode);
+}
+
+void printShuntingYard(LexCode* code) {
+    int i;
+    for(i = 0; i < code->size; i++) {
+        shuntingYard(&code->lines[i]);
+    }
 }
 
 void printLexered(LexCode* code) {
