@@ -1,8 +1,11 @@
 # Langar
-MY CURRENT WORK - NOT COMPLETE
+
+**WORK IN PROGRESS - NOT COMPLETE**
 
 My current goal is to create my own programming language, written in C.
 I might add some cool unique things to it, still thinking :)
+
+Take into consideration that I do not really have OOP in C, but I still wanted to write it in C to make it more of a challenge. Therefore, my code can't be separated into objects and have inheritance, so it affects the way I choose to implement stuff. I will try add as many explanations as I can for the least ideal things I do.
 
 Let's see how it goes!
 
@@ -45,8 +48,21 @@ Let's see how it goes!
  - [ ] Semantic checks -
      - will add later
           
+## How my code works:
 
+**Processing the code:**
+ 1. I go over the code given to me, and split it into tokens using the `Tokenizer`.
+ 2. I go over each token and give it a "role", for example - int is a 'type', + is an 'operator' etc. I use the `Lexer` to do so.
+ 3. I organize the code using the `Organizer`, to make it easier for me to compile. I delete empty lines, and does stuff like splitting 'int a = 5;' to 'int a;' and 'a = 5;'. You can go over the Organizer to see what other stuff I do.
+ 4. Just like I did with the lexer, giving the tokens roles, this time I give the lines roles, for example - 'int a;' will be set with 'initVar', I do the following with the `Identifier`.
 
+**This is when the fun begins, and we have enough information about the code to start compiling it!**
+ 1. Currently, the compiler is first looking for functions.
+ 2. When found, it adds a label for the function and starts compiling it.
+ 3. It first looks for all the local variables and initialize them by giving them an offset.
+ 4. When we give those variables a value somewhere in the code, it looks for their offset and puts the value in the offset, using the `Shunting Yard Algorithm` if necessary.
+ 5. Also, if there is a reference to a variable, for example: a = b + 1, it will also look for b's offset and work with it.
+ 6. To be continued...
 
 ## An example of code showing the current ability of my compiler
 The code I receive:
