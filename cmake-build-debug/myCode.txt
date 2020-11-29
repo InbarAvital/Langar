@@ -1,9 +1,7 @@
-int x = 3;
-int y;
-if(x==3) {
-    y=x+1;
-}
-int i;
-for(int i=0; i<y; i++) {
-    x++;
+Class cla {
+    int func() {
+        int a = 5 + 3 - (3 - 5) * 3;
+        int b = 7;
+        a = b + 1;
+    }
 }
