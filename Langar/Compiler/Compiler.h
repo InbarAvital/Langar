@@ -15,5 +15,7 @@ Var newVar(LexLine* line);
 Var initVar(LexLine* line);
 Func newFunc(LexLine* line);
 Func initFunc(LexLine* line);
-int getVarOffset(char* name,  Func* func);
+Var* getVar(char* name,  Func* func);
+char* compileReturn(LexLine* line, Func* func);
+
 #endif //MYLANGUAGE_COMPILER_H

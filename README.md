@@ -24,7 +24,7 @@ Let's see how it goes!
      - [X] Multiply
  - [ ] Functions
      - [X] label
-     - [ ] return value
+     - [X] return value (supports only the current types of variables I support).
      - [ ] recursion
  - [ ] Variables -
      - [X] int
@@ -67,10 +67,11 @@ Let's see how it goes!
 ## An example of code showing the current ability of my compiler
 The code I receive:
 ```c
-void func() {
+int func() {
         int a = 5 + 3 - (3 - 5) * 3;
         int b = 7;
         a = b + 1;
+        return a;
 }
 ```
 The assembly code I return:
@@ -112,6 +113,7 @@ func:
     push    eax
     pop     eax
     mov     DWORD PTR [ebp - 4], eax
+    mov     eax, DWORD PTR[ebp -4]
     mov     esp, ebp
     pop     ebp
     ret

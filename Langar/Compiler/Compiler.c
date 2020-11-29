@@ -68,8 +68,12 @@ char* compileFunc(Func* func) {
         else if(!strcmp(func->code.lines[i].type, UPDATE_VAR)) {
             strcat(asCode, compileExpression(subLine(&func->code.lines[i], 2,
                     func->code.lines[i].size - 1), func));
-            strcat(asCode, updateLocalVarTemplate(getVarOffset(
-                    func->code.lines[i].words[0].value,  func)));
+            strcat(asCode, updateLocalVarTemplate(getVar(
+                    func->code.lines[i].words[0].value,  func)->offset));
+        }
+        // return value
+        else if(!strcmp(func->code.lines[i].type, RETURN)) {
+            strcat(asCode,compileReturn(&func->code.lines[i], func));
         }
     }
     strcat(asCode, "    mov     esp, ebp\n"
@@ -122,7 +126,7 @@ char* compileExpression(LexLine* expression, Func* func) {
         else if(!strcmp(postfixLine->words[i].token, STRING)) {
             if(func != NULL) {
                 char* offsetStr[WORD_SIZE];
-                sprintf(offsetStr, "%d", getVarOffset(postfixLine->words[i].value, func));
+                sprintf(offsetStr, "%d", getVar(postfixLine->words[i].value, func)->offset);
                 strcat(asCode, "    push    DWORD PTR [ebp - ");
                 strcat(asCode, offsetStr);
                 strcat(asCode, "]\n");
@@ -181,13 +185,63 @@ Func initFunc(LexLine* line) {
     return func;
 }
 
-int getVarOffset(char* name,  Func* func) {
+/**
+ * @param name  - the name of the variable.
+ * @param func - the function the variable is in.
+ * @return the var.
+ */
+Var* getVar(char* name,  Func* func) {
     int i;
     for(i = 0; i < *func->locVarSize; i++) {
         if(!strcmp(func->localVars[i].name, name)) {
-            return func->localVars[i].offset;
+            return &func->localVars[i];
         }
     }
-    return 0;
     // ---------- here I can add a - there is no such var error --------------
+    return NULL;
+}
+
+/**
+ * @param line - the line in which there is a return line
+ * @param func - the function that returns
+ * @return returns the assembly line that puts the returned value into eax.
+ */
+char* compileReturn(LexLine* line, Func* func) {
+    int i;
+    char* type = (char*) malloc(sizeof(char) * TYPE_SIZE);
+    strcpy(type, "");
+    char* returnValue = (char*) malloc(sizeof(char) * WORD_SIZE);
+    strcpy(returnValue, "    mov     eax, ");
+    // check what is the returned type
+    // if it is a number
+    if(!strcmp(line->words[1].token, NUMBER)) {
+        // if it is float
+        for(i = 0; i < strlen(line->words[1].value); i++) {
+            if(line->words[1].value[i] == '.') {
+                strcpy(type, "float");
+            }
+        }
+        // if it is int
+        if(!strcmp(type, "")) {
+            strcpy(type, "int");
+        }
+        strcat(returnValue, line->words[1].value);
+    }
+    // local variable
+    else if(!strcmp(line->words[1].token, STRING)) {
+        char* offset[WORD_SIZE];;
+        strcpy(type, getVar(line->words[1].value, func)->type);
+        strcat(returnValue, "DWORD PTR[ebp -");
+        sprintf(offset, "%d", getVar(line->words[1].value, func)->offset);
+        strcat(returnValue, offset);
+        strcat(returnValue, "]");
+    }
+    strcat(returnValue, "\n");
+    // confirm the returned type to the function's return type
+    // ----------- if there is a problem - we can later add an error ----------
+    // else, put it in eax
+    if(!strcmp(type, func->returnType)) {
+        return returnValue;
+    }
+    return NULL;
 }

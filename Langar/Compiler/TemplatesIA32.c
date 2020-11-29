@@ -58,6 +58,7 @@ char* divTemplate() {
  */
 char* updateLocalVarTemplate(int offset) {
     char* offsetStr[WORD_SIZE];
+    // turns the int to char*
     sprintf(offsetStr, "%d", offset);
     char* var = (char*) malloc(WORD_SIZE * sizeof(char));
     strcat(var, "    pop     eax\n"
