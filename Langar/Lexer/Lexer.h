@@ -28,6 +28,7 @@
 #define CONDITION_ASSIGN "conditionAssign"
 
 // defines for lexered lines
+#define COMMENT "comment"
 #define INIT_VAR "initVar"
 #define INIT_FUNC "initFunc"
 #define UPDATE_VAR "updateVar"
@@ -53,7 +54,7 @@ typedef struct LexeredLines {
     int size;
     /**
     * Possible Types:
-    *      initVar, initFunc, updateVar, condition, loop, block({}), initClass, return, unknown.
+    *      initVar, initFunc, updateVar, condition, loop, block({}), initClass, return, comment, unknown.
     */
     char* type;
 } LexLine;

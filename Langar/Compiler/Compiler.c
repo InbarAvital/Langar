@@ -42,22 +42,20 @@ char* compileFunc(Func* func) {
     strcat(asCode, ":\n"
                    "    push    ebp\n"
                    "    mov     ebp, esp\n");
+    char keepOffset[WORD_SIZE];
     int i;
     // first allocate a place in the stack for each var
     for(i = 0; i < func->code.size; i++) {
         // initialize variable
         if(!strcmp(func->code.lines[i].type, INIT_VAR)) {
             // adds the var to this func's var list
-            func->localVars[*func->locVarSize] = initVar(&func->code.lines[i]);
-            if(*func->locVarSize == 0) {
-                func->localVars[*func->locVarSize].offset = 4;
-            } else {
-                func->localVars[*func->locVarSize] .offset =
-                        func->localVars[*func->locVarSize - 1].offset + 4;
-            }
-            *func->locVarSize = *func->locVarSize + 1;
+            addVarToFunction(func, i);
         }
     }
+    strcat(asCode,"    sub     esp, ");
+    sprintf(keepOffset, "%d", func->localVars[*func->locVarSize - 1].offset);
+    strcat(asCode, keepOffset);
+    strcat(asCode,"\n");
     // now works on the rest of the code
     for(i = 0; i < func->code.size; i++) {
         // initialize variable
@@ -139,8 +137,8 @@ char* compileExpression(LexLine* expression, Func* func) {
     return asCode;
 }
 /**
- * @param line - a function
- * @return an assembly of the function by using the templates.
+ * @param line - a line in which the var is being initialized
+ * @return a new var initialized according to the line sent..
  */
 Var initVar(LexLine* line) {
     Var var;
@@ -149,6 +147,15 @@ Var initVar(LexLine* line) {
     strcpy(var.type, line->words[0].value);
     strcpy(var.name, line->words[1].value);
     var.offset = 0;
+    var.size = 0;
+    // setting the amount of bytes
+    if(!strcmp(var.type, "int")) {
+        var.size = 4;
+    } else if(!strcmp(var.type, "char")) {
+        var.size = 1;
+    } else if(!strcmp(var.type, "bool")) {
+        var.size = 1;
+    }
     return var;
 }
 
@@ -245,4 +252,34 @@ char* compileReturn(LexLine* line, Func* func) {
         return returnValue;
     }
     return NULL;
+}
+
+/**
+ * @param func - the function we want to add a var to
+ * @param index - the line in which we init a var.
+ */
+void addVarToFunction(Func* func, int index) {
+    func->localVars[*func->locVarSize] = initVar(&func->code.lines[index]);
+    if(*func->locVarSize == 0) {
+        func->localVars[*func->locVarSize].offset = func->localVars[*func->locVarSize].size;
+    } else {
+        func->localVars[*func->locVarSize] .offset =
+                func->localVars[*func->locVarSize - 1].offset +
+                func->localVars[*func->locVarSize - 1].size;
+    }
+    *func->locVarSize = *func->locVarSize + 1;
+}
+
+/**
+ * @param var - the var we want to get the size of
+ * @return a string of the size ptr (for example- DWORD PTR[ebp -)
+ */
+char* getSizePtr(Var* var) {
+    if(var->size == 4) {
+        return "DWORD PTR[ebp -"; // gits 32 bits
+    } else if(var->size == 2) {
+        return "WORD PTR[ebp -"; // gets 16 bits
+    } else if(var->size == 1) {
+        return "BYTE PTR[ebp -"; // gets 8 bits
+    }
 }

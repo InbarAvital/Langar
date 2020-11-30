@@ -25,7 +25,9 @@ Let's see how it goes!
  - [ ] Functions
      - [X] label
      - [X] return value (supports only the current types of variables I support).
-     - [ ] recursion
+     - [ ] calling a function
+     - [ ] returning value using a function
+     - [ ] getting arguments
  - [ ] Variables -
      - [X] int
      - [ ] char
@@ -68,7 +70,8 @@ Let's see how it goes!
 The code I receive:
 ```c
 int func() {
-        int a = 5 + 3 - (3 - 5) * 3;
+        // variables
+        int a = 5 + 3 - (10 / 2) * 7;
         int b = 7;
         a = b + 1;
         return a;
@@ -77,21 +80,23 @@ int func() {
 The assembly code I return:
 ```asm
 func:
+func:
     push    ebp
     mov     ebp, esp
+    sub     esp, 8
     push    5
     push    3
     pop     eax
     pop     ebx
     add     eax, ebx
     push    eax
-    push    3
-    push    5
+    push    10
+    push    2
     pop     eax
     pop     ebx
-    sub     eax, ebx
+    idiv    eax, ebx
     push    eax
-    push    3
+    push    7
     pop     eax
     pop     ebx
     imul    eax, ebx
@@ -118,6 +123,7 @@ func:
     mov     esp, ebp
     pop     ebp
     ret
+
 ```
 I know, it's not much, and needs some fixes, but I am still working on it :)
 

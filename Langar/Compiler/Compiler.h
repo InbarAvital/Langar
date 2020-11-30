@@ -17,5 +17,6 @@ Func newFunc(LexLine* line);
 Func initFunc(LexLine* line);
 Var* getVar(char* name,  Func* func);
 char* compileReturn(LexLine* line, Func* func);
+void addVarToFunction(Func* func, int index);
 
 #endif //MYLANGUAGE_COMPILER_H

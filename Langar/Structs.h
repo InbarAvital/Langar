@@ -13,6 +13,7 @@ typedef struct Variables {
     char* name;
     char* type; // int, string, bool, double, float
     int offset;
+    int size;
 } Var;
 
 typedef struct Functions {
