@@ -39,7 +39,7 @@ TokCode* tokenize(char* text) {
     }
 
     // the chars I split my lines by
-    char* splitBy= " +-/*(){}[]<>!=;,";
+    char* splitBy= " +-/*(){}[]<>!=;,'";
 
     // sending each line to line lexer
     for(i = 0; i < tokenized->size; i++) {

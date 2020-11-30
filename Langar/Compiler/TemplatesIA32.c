@@ -54,17 +54,39 @@ char* divTemplate() {
 
 /**
  * @param offset - the offset from the base pointer.
+ * @param sizePtr - the way we approach to the address (is it an int? a char?)
  * @return an update of the var in the given offset (puts the value from the stack).
  */
-char* updateLocalVarTemplate(int offset) {
+char* updateLocalVarFromStackTemplate(int offset, char* sizePtr) {
     char* offsetStr[WORD_SIZE];
     // turns the int to char*
     sprintf(offsetStr, "%d", offset);
     char* var = (char*) malloc(WORD_SIZE * sizeof(char));
     strcat(var, "    pop     eax\n"
-                "    mov     DWORD PTR [ebp - ");
+                "    mov     ");
+    strcat(var, sizePtr);
     strcat(var, offsetStr);
     strcat(var, "], eax\n");
+    return var;
+}
+/**
+ * @param offset - the offset from the base pointer.
+ * @param value - the value we want to insert to the var.
+ * @return an update of the var in the given offset (puts the value from the value argument).
+ */
+char* updateLocalVarFromValueTemplate(int offset, int value, char* sizePtr) {
+    char* offsetStr[WORD_SIZE];
+    char* valueStr[WORD_SIZE];
+    // turns the int to char*
+    sprintf(offsetStr, "%d", offset);
+    sprintf(valueStr, "%d", value);
+    char* var = (char*) malloc(WORD_SIZE * sizeof(char));
+    strcat(var,"    mov     ");
+    strcat(var, sizePtr);
+    strcat(var, offsetStr);
+    strcat(var, "], ");
+    strcat(var, valueStr);
+    strcat(var, "\n");
     return var;
 }
 // !=, ==, >, <, bool, !bool, <=, >=, &&, ||

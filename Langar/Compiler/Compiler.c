@@ -46,16 +46,26 @@ char* compileFunc(Func* func) {
     int i;
     // first allocate a place in the stack for each var
     for(i = 0; i < func->code.size; i++) {
+        // just in case we have a return before initializing a variable.
+        if(!strcmp(func->code.lines[i].type, RETURN)) {
+            char* compiledReturn = compileReturn(&func->code.lines[i], func);
+            if(compiledReturn == NULL) {
+                break;
+            }
+        }
         // initialize variable
-        if(!strcmp(func->code.lines[i].type, INIT_VAR)) {
+        else if(!strcmp(func->code.lines[i].type, INIT_VAR)) {
             // adds the var to this func's var list
-            addVarToFunction(func, i);
+            compileInitVar(func, i);
         }
     }
-    strcat(asCode,"    sub     esp, ");
-    sprintf(keepOffset, "%d", func->localVars[*func->locVarSize - 1].offset);
-    strcat(asCode, keepOffset);
-    strcat(asCode,"\n");
+    // moves esp in case we added variables to the stack.
+    if(*func->locVarSize != 0) {
+        strcat(asCode,"    sub     esp, ");
+        sprintf(keepOffset, "%d", func->localVars[*func->locVarSize - 1].offset);
+        strcat(asCode, keepOffset);
+        strcat(asCode,"\n");
+    }
     // now works on the rest of the code
     for(i = 0; i < func->code.size; i++) {
         // initialize variable
@@ -64,14 +74,15 @@ char* compileFunc(Func* func) {
         }
         // updates variable
         else if(!strcmp(func->code.lines[i].type, UPDATE_VAR)) {
-            strcat(asCode, compileExpression(subLine(&func->code.lines[i], 2,
-                    func->code.lines[i].size - 1), func));
-            strcat(asCode, updateLocalVarTemplate(getVar(
-                    func->code.lines[i].words[0].value,  func)->offset));
+            strcat(asCode, compileUpdateLocalVar(func, i));
         }
         // return value
         else if(!strcmp(func->code.lines[i].type, RETURN)) {
-            strcat(asCode,compileReturn(&func->code.lines[i], func));
+            char* compiledReturn = compileReturn(&func->code.lines[i], func);
+            if(compiledReturn == NULL) {
+                break;
+            }
+            strcat(asCode, compiledReturn);
         }
     }
     strcat(asCode, "    mov     esp, ebp\n"
@@ -102,7 +113,7 @@ char* compileExpression(LexLine* expression, Func* func) {
             strcat(asCode, "\n");
         }
         // if it is an operator
-        else if(!strcmp(postfixLine->words[i].token, OPERATOR)){
+        else if(!strcmp(postfixLine->words[i].token, OPERATOR)) {
             // adds
             if(!strcmp(postfixLine->words[i].value, "+")) {
                 strcat(asCode, addTemplate());
@@ -123,11 +134,13 @@ char* compileExpression(LexLine* expression, Func* func) {
         // if it is a variable
         else if(!strcmp(postfixLine->words[i].token, STRING)) {
             if(func != NULL) {
+                Var* var = getVar(postfixLine->words[i].value, func);
                 char* offsetStr[WORD_SIZE];
-                sprintf(offsetStr, "%d", getVar(postfixLine->words[i].value, func)->offset);
-                strcat(asCode, "    mov     DWORD PTR [ebp - ");
+                sprintf(offsetStr, "%d", var->offset);
+                strcat(asCode, "    mov     ebx, ");
+                strcat(asCode, getSizePtr(var));
                 strcat(asCode, offsetStr);
-                strcat(asCode, "], ebx\n");
+                strcat(asCode, "]\n");
                 strcat(asCode, "    push    ebx\n");
             } else {
                 // it is a global var - I will add this option later.
@@ -215,6 +228,16 @@ Var* getVar(char* name,  Func* func) {
  * @return returns the assembly line that puts the returned value into eax.
  */
 char* compileReturn(LexLine* line, Func* func) {
+    // if it is void, exit without doing anything
+    if(line->size == 2) {
+        if(!strcmp(func->returnType, "void")) {
+            return NULL;
+        }
+        else {
+            // ------- can add an error later ----------
+        }
+    }
+
     int i;
     char* type = (char*) malloc(sizeof(char) * TYPE_SIZE);
     strcpy(type, "");
@@ -237,10 +260,11 @@ char* compileReturn(LexLine* line, Func* func) {
     }
     // local variable
     else if(!strcmp(line->words[1].token, STRING)) {
-        char* offset[WORD_SIZE];;
-        strcpy(type, getVar(line->words[1].value, func)->type);
-        strcat(returnValue, "DWORD PTR[ebp -");
-        sprintf(offset, "%d", getVar(line->words[1].value, func)->offset);
+        char* offset[WORD_SIZE];
+        Var* var = getVar(line->words[1].value, func);
+        strcpy(type, var->type);
+        strcat(returnValue, getSizePtr(var));
+        sprintf(offset, "%d", var->offset);
         strcat(returnValue, offset);
         strcat(returnValue, "]");
     }
@@ -258,14 +282,14 @@ char* compileReturn(LexLine* line, Func* func) {
  * @param func - the function we want to add a var to
  * @param index - the line in which we init a var.
  */
-void addVarToFunction(Func* func, int index) {
+void compileInitVar(Func* func, int index) {
     func->localVars[*func->locVarSize] = initVar(&func->code.lines[index]);
     if(*func->locVarSize == 0) {
         func->localVars[*func->locVarSize].offset = func->localVars[*func->locVarSize].size;
     } else {
-        func->localVars[*func->locVarSize] .offset =
+        func->localVars[*func->locVarSize].offset =
                 func->localVars[*func->locVarSize - 1].offset +
-                func->localVars[*func->locVarSize - 1].size;
+                func->localVars[*func->locVarSize].size;
     }
     *func->locVarSize = *func->locVarSize + 1;
 }
@@ -276,10 +300,44 @@ void addVarToFunction(Func* func, int index) {
  */
 char* getSizePtr(Var* var) {
     if(var->size == 4) {
-        return "DWORD PTR[ebp -"; // gits 32 bits
+        return "DWORD PTR[ebp - "; // gits 32 bits
     } else if(var->size == 2) {
-        return "WORD PTR[ebp -"; // gets 16 bits
+        return "WORD PTR[ebp - "; // gets 16 bits
     } else if(var->size == 1) {
-        return "BYTE PTR[ebp -"; // gets 8 bits
+        return "BYTE PTR[ebp - "; // gets 8 bits
     }
+    return NULL;
+}
+
+/**
+ * @param func - the function that contains the var we are updating
+ * @param index - the line in which we update the var
+ * @return an assembly code of the var update
+ */
+char* compileUpdateLocalVar(Func* func, int index) {
+    char* asCode = (char*)malloc(MAX_TEXT * sizeof(char));
+    Var* var = getVar(func->code.lines[index].words[0].value,  func);
+    char* sizePtr = getSizePtr(var);
+    // if it is an int, calculate the expression and put in the var.
+    if(!strcmp(var->type, "int")) {
+        strcat(asCode, compileExpression(subLine(&func->code.lines[index], 2,
+                                                 func->code.lines[index].size - 1), func));
+        strcat(asCode, updateLocalVarFromStackTemplate(var->offset, sizePtr));
+    } else if(!strcmp(var->type, "char")) {
+        int charValue = (int)(func->code.lines[index].words[3].value[0]);
+        strcat(asCode, updateLocalVarFromValueTemplate(var->offset, charValue, sizePtr));
+    } else if(!strcmp(var->type, "bool")) {
+        int value;
+        if(!strcmp(func->code.lines[index].words[2].value, "true") ||
+                !strcmp(func->code.lines[index].words[2].value, "1")) {
+            value = 1;
+        } else if(!strcmp(func->code.lines[index].words[2].value, "false") ||
+                  !strcmp(func->code.lines[index].words[2].value, "0")) {
+            value = 0;
+        } else {
+            // ----------------- can later add "incorrect bool assignment" ------------
+        }
+        strcat(asCode, updateLocalVarFromValueTemplate(var->offset, value, sizePtr));
+    }
+    return asCode;
 }

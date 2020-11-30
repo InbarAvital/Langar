@@ -30,8 +30,8 @@ Let's see how it goes!
      - [ ] getting arguments
  - [ ] Variables -
      - [X] int
-     - [ ] char
-     - [ ] bool
+     - [X] char
+     - [X] bool
      - [ ] float
      - [ ] string
      - [X] deals with expressions such as: int a = 5+b*2-(4/2)
@@ -69,21 +69,38 @@ Let's see how it goes!
 ## An example of code showing the current ability of my compiler
 The code I receive:
 ```c
-int func() {
-        // variables
-        int a = 5 + 3 - (10 / 2) * 7;
-        int b = 7;
-        a = b + 1;
-        return a;
+int expressions() {
+       // expression example
+       int a = 5 + 3 - (10 / 2) * 7;
+       return a;
+}
+
+void variables() {
+    // examples of all the variables I currently support in
+    int b = 7;
+    char ch = 'a';
+    // bool accepts both true/false and 1/0
+    bool flag = true;
+    flag = 0;
+    int a = b;
+    // you don't have to add a return line
+    return;
+}
+
+void returnTest() {
+    // the function ends here when translating to assembly
+    return;
+    int a = 1;
+    int b = 2;
+    a = b + 5;
 }
 ```
 The assembly code I return:
 ```asm
-func:
-func:
+expressions:
     push    ebp
     mov     ebp, esp
-    sub     esp, 8
+    sub     esp, 4
     push    5
     push    3
     pop     eax
@@ -106,24 +123,36 @@ func:
     sub     eax, ebx
     push    eax
     pop     eax
-    mov     DWORD PTR [ebp - 4], eax
-    push    7
-    pop     eax
-    mov     DWORD PTR [ebp - 8], eax
-    mov     DWORD PTR [ebp - 8], ebx
-    push    ebx
-    push    1
-    pop     eax
-    pop     ebx
-    add     eax, ebx
-    push    eax
-    pop     eax
-    mov     DWORD PTR [ebp - 4], eax
-    mov     eax, DWORD PTR[ebp -4]
+    mov     DWORD PTR[ebp - 4], eax
+    mov     eax, DWORD PTR[ebp - 4]
     mov     esp, ebp
     pop     ebp
     ret
 
+variables:
+    push    ebp
+    mov     ebp, esp
+    sub     esp, 10
+    push    7
+    pop     eax
+    mov     DWORD PTR[ebp - 4], eax
+    mov     BYTE PTR[ebp - 5], 97
+    mov     BYTE PTR[ebp - 6], 1
+    mov     BYTE PTR[ebp - 6], 0
+    mov     ebx, DWORD PTR[ebp - 4]
+    push    ebx
+    pop     eax
+    mov     DWORD PTR[ebp - 10], eax
+    mov     esp, ebp
+    pop     ebp
+    ret
+
+returnTest:
+    push    ebp
+    mov     ebp, esp
+    mov     esp, ebp
+    pop     ebp
+    ret
 ```
 I know, it's not much, and needs some fixes, but I am still working on it :)
 

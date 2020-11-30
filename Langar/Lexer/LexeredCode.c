@@ -27,7 +27,7 @@ LexCode* copyLexCode(LexCode* source) {
 LexLine* copyLexLine(LexLine* source) {
     LexLine* dest = (LexLine*) malloc(sizeof(LexLine));
     dest->words = (LexObj*) malloc(WORD_AMOUNT * sizeof(LexLine));
-    if(source->type!=NULL) {
+    if(source->type != NULL) {
         dest->type = (char*) malloc(TYPE_SIZE * sizeof(char));
         strcpy(dest->type, source->type);
     }

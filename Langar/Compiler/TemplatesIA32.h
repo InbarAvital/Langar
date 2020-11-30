@@ -10,7 +10,8 @@ char* addTemplate();
 char* subTemplate();
 char* mulTemplate();
 char* divTemplate();
-char* updateLocalVarTemplate(int offset);
+char* updateLocalVarFromStackTemplate(int offset, char* sizePtr);
+char* updateLocalVarFromValueTemplate(int offset, int value, char* sizePtr);
 char* ifStatementTemplate(LexLine* line);
 
 #endif //MYLANGUAGE_TEMPLATESIA32_H

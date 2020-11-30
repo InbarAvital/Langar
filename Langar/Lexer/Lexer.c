@@ -28,6 +28,7 @@ LexCode* lexer(TokCode* code) {
 LexLine* lexerLine(TokLine* line) {
     int i;
     LexLine* lexered = (LexLine*)malloc(sizeof(LexLine));
+    lexered->type = NULL;
     lexered->words = (LexObj*)malloc(WORD_AMOUNT * sizeof(LexObj));
     lexered->size = line->size;
     for(i = 0; i < lexered->size; i++) {
@@ -89,7 +90,8 @@ LexObj* lexerWord(char* word) {
     if (!strcmp(word, "(") || !strcmp(word, ")") ||
             !strcmp(word, "[") || !strcmp(word, "]") ||
             !strcmp(word, "<") || !strcmp(word, ">") ||
-            !strcmp(word, "!") || !strcmp(word, "\"")) {
+            !strcmp(word, "!") || !strcmp(word, "\"") ||
+            !strcmp(word, "'")) {
         strcpy(lexered->token, SIGN);
         return lexered;
     }

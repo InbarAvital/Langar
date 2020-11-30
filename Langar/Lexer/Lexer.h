@@ -42,7 +42,7 @@ typedef struct LexeredObjects {
     char* value;
     /**
     * Possible Tokens:
-    *      state, type, number, sign(()[]<>!,"), operator(+-/*),  loop, condition,
+    *      state, type, number, sign(()[]<>!,"'), operator(+-/*),  loop, condition,
     *      string, cut(;), assign(=), blockStart({), blockEnd(}), and(&&), or(||),
     *      conditionAssign(==, !=, <=, >=).
     */
