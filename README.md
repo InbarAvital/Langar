@@ -154,6 +154,5 @@ returnTest:
     pop     ebp
     ret
 ```
-I know, it's not much, and needs some fixes, but I am still working on it :)
 
 The optimizations will be applied in the end.
