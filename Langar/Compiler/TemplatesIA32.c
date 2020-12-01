@@ -69,6 +69,7 @@ char* updateLocalVarFromStackTemplate(int offset, char* sizePtr) {
     strcat(var, "], eax\n");
     return var;
 }
+
 /**
  * @param offset - the offset from the base pointer.
  * @param value - the value we want to insert to the var.
@@ -89,7 +90,127 @@ char* updateLocalVarFromValueTemplate(int offset, int value, char* sizePtr) {
     strcat(var, "\n");
     return var;
 }
-// !=, ==, >, <, bool, !bool, <=, >=, &&, ||
-char* ifStatementTemplate(LexLine* line) {
 
+/**
+ * @return equal(=) template in assembly
+ */
+char* equalsTemplate() {
+    char* str = "    pop     eax\n"
+                "    pop     ebx\n"
+                "    cmp     eax, ebx\n"
+                "    cmove   eax, 1\n"
+                "    cmovne  eax, 0\n"
+                "    push    eax\n";
+    return str;
+}
+
+/**
+ * @return not equal(!=) template in assembly
+ */
+char* notEqualsTemplate() {
+    char* str = "    pop     eax\n"
+                "    pop     ebx\n"
+                "    cmp     eax, ebx\n"
+                "    cmove   eax, 0\n"
+                "    cmovne  eax, 1\n"
+                "    push    eax\n";
+    return str;
+}
+
+/**
+ * @return greater equal(>=) template in assembly
+ */
+char* greaterEqualsTemplate() {
+    char* str = "    pop     eax\n"
+                "    pop     ebx\n"
+                "    cmp     eax, ebx\n"
+                "    cmovge  eax, 1\n"
+                "    cmovl   eax, 0\n"
+                "    push    eax\n";
+    return str;
+}
+
+/**
+ * @return less equal(<=) template in assembly
+ */
+char* lessEqualsTemplate() {
+    char* str = "    pop     eax\n"
+                "    pop     ebx\n"
+                "    cmp     eax, ebx\n"
+                "    cmovle  eax, 1\n"
+                "    cmovg   eax, 0\n"
+                "    push    eax\n";
+    return str;
+}
+
+/**
+ * @return greater(>) template in assembly
+ */
+char* greaterTemplate() {
+    char* str = "    pop     eax\n"
+                "    pop     ebx\n"
+                "    cmp     eax, ebx\n"
+                "    cmovle  eax, 1\n"
+                "    cmovg   eax, 0\n"
+                "    push    eax\n";
+    return str;
+}
+
+/**
+ * @return less(<) template in assembly
+ */
+char* lessTemplate() {
+    char* str = "    pop     eax\n"
+                "    pop     ebx\n"
+                "    cmp     eax, ebx\n"
+                "    cmovl   eax, 1\n"
+                "    cmovge  eax, 0\n"
+                "    push    eax\n";
+    return str;
+}
+
+/**
+ * @return not(!) template in assembly
+ */
+char* notTemplate() {
+    char* str = "    pop     eax\n"
+                "    cmp     eax, 0\n"
+                "    cmove   eax, 1\n"
+                "    cmovne  eax, 0\n"
+                "    push    eax\n";
+    return str;
+}
+
+/**
+ * @return and(&&) template in assembly
+ */
+char* andTemplate() {
+    char* str = "    pop     eax\n"
+                "    pop     ebx\n"
+                "    and     eax, ebx\n"
+                "    push    eax\n";
+    return str;
+}
+
+/**
+ * @return or(||) template in assembly
+ */
+char* orTemplate() {
+    char* str = "    pop     eax\n"
+                "    pop     ebx\n"
+                "    or      eax, ebx\n"
+                "    push    eax\n";
+    return str;
+}
+
+/**
+ * @return if template in assembly
+ */
+char* ifStatementTemplate(char* label) {
+    char* str = "    pop     eax\n"
+                "    cmp     eax, 0\n"
+                "    je      ";
+    strcat(str, label);
+    strcat(str, "\n");
+    return str;
 }

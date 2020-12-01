@@ -37,7 +37,11 @@ LexLine* shuntingYard(LexLine* line) {
         }
         // needs to add later - if it is a func call
         // if it is an operator
-        else if (!strcmp(line->words[i].token, OPERATOR)) {
+        else if (!strcmp(line->words[i].token, OPERATOR) ||
+                    !strcmp(line->words[i].token, CONDITION_ASSIGN) ||
+                    !strcmp(line->words[i].token, CONDITION_SIGN) ||
+                    !strcmp(line->words[i].token, OR) ||
+                    !strcmp(line->words[i].token, AND)) {
             while((operatorStack->size != 0) &&
                     (precedence(&operatorStack->words[operatorStack->size-1]) <= precedence(&line->words[i])) &&
                     strcmp(operatorStack->words[operatorStack->size-1].value, "(")) {
@@ -69,7 +73,7 @@ LexLine* shuntingYard(LexLine* line) {
         operatorStack->size--;
     }
     // printing for testing
-    /*int j;
+/*    int j;
     for(j = 0; j < outputQueue->size; j++) {
         printf("%s\n", outputQueue->words[j].value);
     }

@@ -20,5 +20,7 @@ char* compileReturn(LexLine* line, Func* func);
 void compileInitVar(Func* func, int index);
 char* getSizePtr(Var* var);
 char* compileUpdateLocalVar(Func* func, int index);
+char* compileCondition(Func* func, int index);
+int getConditionLength(Func* func, int index);
 
 #endif //MYLANGUAGE_COMPILER_H

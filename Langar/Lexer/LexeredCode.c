@@ -60,7 +60,7 @@ LexObj* copyLexObj(LexObj* source) {
  * @return the block starting at index
  */
 LexCode* getBlockOfCode(LexCode* code, int index) {
-    int end = getBlockOfCodeInt(code, index);
+    int end = getEndOfBlock(code, index);
 
     // creates a new code, the one we will send back eventually
     LexCode* block = (LexCode*) malloc(sizeof(LexCode*));
@@ -80,12 +80,12 @@ LexCode* getBlockOfCode(LexCode* code, int index) {
  * @param index - the index of the line when we want to search for an end of a block.
  * @return the number of line in which the block ends
  */
-int getBlockOfCodeInt(LexCode* code, int index) {
+int getEndOfBlock(LexCode* code, int index) {
     int count = 1; // will be increased by 1 when { is in code and decreased when } is in code
     int line = index + 1;
 
     while(count != 0) {
-        if(!strcmp(code->lines[line].type, "block")) {
+        if(!strcmp(code->lines[line].type, BLOCK)) {
             if(!strcmp(code->lines[line].words[0].value, "{")) {
                 count++;
             } else {

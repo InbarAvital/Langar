@@ -55,7 +55,18 @@ LexCode* organize(LexCode* code) {
         }
         // if there is an empty line - delete it.
         if(organized->lines[i].size == 0) {
-            organized = organizeEmptyLine(organized, i);
+            organized = deleteLine(organized, i);
+            i--;
+        }
+        // } with something after will be splited to 2 lines.
+        if(organized->lines[i].size > 1 && !strcmp(organized->lines[i].words[0].value, "}")) {
+            organized = organizeEndBlock(organized, i);
+        }
+        // deletes a comment
+        if(!strcmp(organized->lines[i].words[0].value, "/") &&
+                !strcmp(organized->lines[i].words[1].value, "/")) {
+            organized = deleteLine(organized, i);
+            i--;
         }
     }
     return organized;
@@ -302,12 +313,12 @@ LexLine* organizeDoubleSigns(LexLine* line, int index) {
 }
 
 /**
- * deletes empty lines
+ * deletes a line
  *
  * @param line - the line we want to delete.
  * @return the code after fixing the problem.
  */
-LexCode* organizeEmptyLine(LexCode* code, int index) {
+LexCode* deleteLine(LexCode* code, int index) {
     LexCode* organized = (LexCode*) malloc(sizeof(LexCode*));
     organized->lines = (LexLine*) malloc(LINE_AMOUNT * sizeof(LexLine));
     organized->size = code->size - 1;
@@ -319,6 +330,42 @@ LexCode* organizeEmptyLine(LexCode* code, int index) {
     // adds the lines after the indexed line;
     for(i = index + 1; i < code->size; i++) {
         organized->lines[i - 1] = *copyLexLine(&code->lines[i]);
+    }
+    return organized;
+}
+
+/**
+ * @param code - the code
+ * @param index - the index of the line with the problem (} and then something after it)
+ * @return a fixed code.
+ */
+LexCode* organizeEndBlock(LexCode* code, int index) {
+    LexCode* organized = (LexCode*) malloc(sizeof(LexCode*));
+    organized->lines = (LexLine*) malloc(LINE_AMOUNT * sizeof(LexLine));
+    organized->size = code->size + 1;
+    int i;
+    // sets the lines before the indexed line to stay the same;
+    for(i = 0; i < index; i++) {
+        organized->lines[i] = *copyLexLine(&code->lines[i]);
+    }
+    organized->lines[index].words = (LexObj*) malloc(WORD_AMOUNT * sizeof(LexObj));
+    organized->lines[index + 1].words = (LexObj*) malloc(WORD_AMOUNT * sizeof(LexObj));
+    // adds the new } line
+    organized->lines[index].words[0].value = (char*) malloc(WORD_SIZE * sizeof(char));
+    organized->lines[index].words[0].token = (char*) malloc(WORD_SIZE * sizeof(char));
+    strcpy(organized->lines[index].words[0].value, "}");
+    strcpy(organized->lines[index].words[0].token, SIGN);
+    organized->lines[index].size = 1;
+
+    // sets line after that
+    for(i = 0; i < code->lines[index].size - 1; i++) {
+        organized->lines[index + 1].words[i] = *copyLexObj(&code->lines[index].words[i + 1]);
+    }
+    organized->lines[index + 1].size = code->lines[index].size - 1;
+
+    // sets the rest of the lines to stay the same.
+    for(i = index + 1; i < code->size; i++) {
+        organized->lines[i+1] = *copyLexLine(&code->lines[i]);
     }
     return organized;
 }

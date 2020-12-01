@@ -26,6 +26,8 @@ typedef struct Functions {
     int* locVarSize;
     int* gloVarSize;
     LexCode code;
+    int cLabel; // condition label
+    int lLabel; // loop label
 } Func;
 
 typedef struct Classes {

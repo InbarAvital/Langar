@@ -25,6 +25,7 @@ int main() {
     LexCode* lexered = lexer(code);
     LexCode* organized = organize(lexered);
     identifyCode(organized);
+    //printShuntingYard(organized);
 
     Class* class = (Class*)malloc(sizeof(Class));
     class->vars = (Var *) malloc(VAR_AMOUNT * sizeof(Var));
@@ -33,9 +34,7 @@ int main() {
     class->varsSize = (int *) malloc(sizeof(int));
     *class->varsSize = 0;
     char* assCode = compileClass(class);
-    fflush(stdin);
-    fflush(stdout);
-    //printLexered(organized);
+    printLexered(organized);
     printf("%s\n", assCode);
 }
 

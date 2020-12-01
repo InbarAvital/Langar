@@ -25,7 +25,7 @@ char* compileClass(Class* class) {
             func.gloVarSize = class->varsSize;
             // getting the block
             func.code = *getBlockOfCode(&class->code, i + 1);
-            i = getBlockOfCodeInt(&class->code, i + 1);
+            i = getEndOfBlock(&class->code, i + 1);
             strcat(asCode, compileFunc(&func));
         }
     }
@@ -37,6 +37,7 @@ char* compileClass(Class* class) {
  * @return an assembly of the function by using the templates.
  */
 char* compileFunc(Func* func) {
+    int condCounter = 0;
     char* asCode = (char*)malloc(MAX_TEXT * sizeof(char));
     strcat(asCode, func->name);
     strcat(asCode, ":\n"
@@ -76,6 +77,11 @@ char* compileFunc(Func* func) {
         else if(!strcmp(func->code.lines[i].type, UPDATE_VAR)) {
             strcat(asCode, compileUpdateLocalVar(func, i));
         }
+        // conditions
+        else if(!strcmp(func->code.lines[i].type, CONDITION)) {
+            strcat(asCode, compileCondition(&func, i));
+            condCounter++;
+        }
         // return value
         else if(!strcmp(func->code.lines[i].type, RETURN)) {
             char* compiledReturn = compileReturn(&func->code.lines[i], func);
@@ -83,6 +89,12 @@ char* compileFunc(Func* func) {
                 break;
             }
             strcat(asCode, compiledReturn);
+        }
+        // a block ended
+        else if(!strcmp(func->code.lines[i].type, BLOCK_END)) {
+            // if an if statement just ended
+            if(insideCond)
+            getConditionLength
         }
     }
     strcat(asCode, "    mov     esp, ebp\n"
@@ -130,6 +142,48 @@ char* compileExpression(LexLine* expression, Func* func) {
             else {
                 strcat(asCode, divTemplate());
             }
+        }
+        // condition assign (==, >=, <=, !=)
+        else if(!strcmp(postfixLine->words[i].token, CONDITION_ASSIGN)) {
+            // ==
+            if(!strcmp(postfixLine->words[i].value, "==")) {
+                strcat(asCode, equalsTemplate());
+            }
+            // >=
+            else if(!strcmp(postfixLine->words[i].value, ">=")) {
+                strcat(asCode, greaterEqualsTemplate());
+            }
+            // <=
+            else if(!strcmp(postfixLine->words[i].value, "<=")) {
+                strcat(asCode, lessEqualsTemplate());
+            }
+            // !=
+            else {
+                strcat(asCode, notEqualsTemplate());
+            }
+        }
+        // condition sign (><!)
+        else if(!strcmp(postfixLine->words[i].token, CONDITION_SIGN)) {
+            // >
+            if(!strcmp(postfixLine->words[i].value, ">")) {
+                strcat(asCode, greaterTemplate());
+            }
+            // <
+            else if(!strcmp(postfixLine->words[i].value, "<")) {
+                strcat(asCode, lessTemplate());
+            }
+            // !
+            else {
+                strcat(asCode, notTemplate());
+            }
+        }
+        // or (||)
+        else if(!strcmp(postfixLine->words[i].token, OR)) {
+            strcat(asCode, notTemplate());
+        }
+        // and (&&)
+        else if(!strcmp(postfixLine->words[i].token, AND)) {
+            strcat(asCode, andTemplate());
         }
         // if it is a variable
         else if(!strcmp(postfixLine->words[i].token, STRING)) {
@@ -188,6 +242,8 @@ Func initFunc(LexLine* line) {
     *func.locVarSize = 0;
     func.gloVarSize = (int *) malloc(sizeof(int));
     *func.gloVarSize = 0;
+    func.cLabel = 0;
+    func.lLabel = 0;
     strcpy(func.returnType, line->words[0].value);
     strcpy(func.name, line->words[1].value);
     int i = 3;
@@ -340,4 +396,56 @@ char* compileUpdateLocalVar(Func* func, int index) {
         strcat(asCode, updateLocalVarFromValueTemplate(var->offset, value, sizePtr));
     }
     return asCode;
+}
+
+/**
+ * @param func - the function in which the condition appears
+ * @param index - the index of the line in which the condition appears
+ * @return - the char of the if statement
+ */
+char* compileCondition(Func* func, int index) {
+    char labelStr[WORD_SIZE];
+    sprintf(labelStr, "%d", func->cLabel);
+    func->cLabel++;
+    char* asCode = (char*)malloc(MAX_TEXT * sizeof(char));
+    strcat(asCode, compileExpression(subLine(&func->code.lines[index], 2,
+            func->code.lines[index].size -2), func));
+    char* label = (char*)malloc(WORD_SIZE * sizeof(char));
+    strcat(label, func->name);
+    strcat(label, "_c_");
+    strcat(label, labelStr);
+    strcat(asCode, ifStatementTemplate(label));
+    return asCode;
+}
+
+/**
+ * @param func - the function in which the condition appears.
+ * @param index - the index of the line in which the condition starts.
+ * @return - the number of conditions that appears (including this one)
+ *           until the end of the condition and it's elses.
+ */
+int getConditionLength(Func* func, int index) {
+    int i, j;
+    int counter = 1;
+    int lenOfIf = getEndOfBlock(&func->code, index + 2);
+    int lenOfElif = 0;
+    // counts the if's inside this current if.
+    for(i = index + 2; i <= lenOfIf; i++) {
+        if(!strcmp(func->code.lines[i].type,CONDITION)) {
+            counter++;
+        }
+    }
+    // counts the elif/else and the if's inside them
+    for(i = lenOfIf + 2; i < func->code.size; i++) {
+        if(!strcmp(func->code.lines[i].type,CONDITION) &&
+                strcmp(func->code.lines[i].type, "if")) {
+            lenOfElif = getEndOfBlock(&func->code, i + 2);
+            for(j = i + 2; i <= lenOfElif; i++) {
+                if(!strcmp(func->code.lines[j].type,CONDITION)) {
+                    counter++;
+                }
+            }
+            i = lenOfElif + 2;
+        }
+    }
 }

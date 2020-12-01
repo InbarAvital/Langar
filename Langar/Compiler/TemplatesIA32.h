@@ -12,6 +12,15 @@ char* mulTemplate();
 char* divTemplate();
 char* updateLocalVarFromStackTemplate(int offset, char* sizePtr);
 char* updateLocalVarFromValueTemplate(int offset, int value, char* sizePtr);
-char* ifStatementTemplate(LexLine* line);
+char* equalsTemplate();
+char* notEqualsTemplate();
+char* greaterEqualsTemplate();
+char* lessEqualsTemplate();
+char* greaterTemplate();
+char* lessTemplate();
+char* notTemplate();
+char* andTemplate();
+char* orTemplate();
+char* ifStatementTemplate(char* label);
 
 #endif //MYLANGUAGE_TEMPLATESIA32_H

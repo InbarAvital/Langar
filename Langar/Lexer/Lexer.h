@@ -26,9 +26,9 @@
 #define AND "and"
 #define OR "or"
 #define CONDITION_ASSIGN "conditionAssign"
+#define CONDITION_SIGN "conditionSign"
 
 // defines for lexered lines
-#define COMMENT "comment"
 #define INIT_VAR "initVar"
 #define INIT_FUNC "initFunc"
 #define UPDATE_VAR "updateVar"
@@ -42,9 +42,9 @@ typedef struct LexeredObjects {
     char* value;
     /**
     * Possible Tokens:
-    *      state, type, number, sign(()[]<>!,"'), operator(+-/*),  loop, condition,
+    *      state, type, number, sign(()[],"'), operator(+-/*),  loop, condition,
     *      string, cut(;), assign(=), blockStart({), blockEnd(}), and(&&), or(||),
-    *      conditionAssign(==, !=, <=, >=).
+    *      conditionAssign(==, !=, <=, >=), conditionSign(!, <, >).
     */
     char* token;
 } LexObj;
@@ -73,7 +73,7 @@ LexCode* copyLexCode(LexCode* source);
 LexLine* copyLexLine(LexLine* source);
 LexObj* copyLexObj(LexObj* source);
 LexCode* getBlockOfCode(LexCode* code, int index);
-int getBlockOfCodeInt(LexCode* code, int index);
+int getEndOfBlock(LexCode* code, int index);
 LexLine* subLine(LexLine* line, int start, int end);
 
 #endif //MYLANGUAGE_LEXER_H

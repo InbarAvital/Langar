@@ -18,11 +18,6 @@ void identifyCode(LexCode* code) {
  */
 void identifyLine(LexLine* line) {
     line->type = (char*)malloc(TYPE_SIZE * sizeof(char));
-    // comment
-    if(!strcmp(line->words[0].value, "/") && !strcmp(line->words[1].value, "/")) {
-        strcpy(line->type, COMMENT);
-        return;
-    }
     // initializing variable
     if(line->size == 3 &&
             !strcmp(line->words[0].token, TYPE) &&

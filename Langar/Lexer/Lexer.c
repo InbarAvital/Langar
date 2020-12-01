@@ -89,9 +89,7 @@ LexObj* lexerWord(char* word) {
     // checks if this is a normal sign
     if (!strcmp(word, "(") || !strcmp(word, ")") ||
             !strcmp(word, "[") || !strcmp(word, "]") ||
-            !strcmp(word, "<") || !strcmp(word, ">") ||
-            !strcmp(word, "!") || !strcmp(word, "\"") ||
-            !strcmp(word, "'")) {
+            !strcmp(word, "\"") || !strcmp(word, "'")) {
         strcpy(lexered->token, SIGN);
         return lexered;
     }
@@ -127,6 +125,12 @@ LexObj* lexerWord(char* word) {
     if (!strcmp(word, "if") || !strcmp(word, "else") ||
             !strcmp(word, "elif")) {
         strcpy(lexered->token,  CONDITION);
+        return lexered;
+    }
+
+    if(!strcmp(word, "<") || !strcmp(word, ">") ||
+            !strcmp(word, "!")) {
+        strcpy(lexered->token,  CONDITION_SIGN);
         return lexered;
     }
 
