@@ -22,5 +22,6 @@ char* getSizePtr(Var* var);
 char* compileUpdateLocalVar(Func* func, int index);
 char* compileCondition(Func* func, int index);
 int getConditionLength(Func* func, int index);
+int getInsideCondition(Func* func, int index);
 
 #endif //MYLANGUAGE_COMPILER_H

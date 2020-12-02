@@ -242,7 +242,7 @@ LexCode* organizeBlock(LexCode* code, int index) {
     organized->lines[index + 1].words[0].value = (char*) malloc(WORD_SIZE * sizeof(char));
     organized->lines[index + 1].words[0].token = (char*) malloc(WORD_SIZE * sizeof(char));
     strcpy(organized->lines[index + 1].words[0].value, "{");
-    strcpy(organized->lines[index + 1].words[0].token, SIGN);
+    strcpy(organized->lines[index + 1].words[0].token, BLOCK_START);
     organized->lines[index + 1].size = 1;
     // sets the rest of the words to stay the same.
     for(i = index + 1; i < code->size; i++) {
@@ -354,7 +354,7 @@ LexCode* organizeEndBlock(LexCode* code, int index) {
     organized->lines[index].words[0].value = (char*) malloc(WORD_SIZE * sizeof(char));
     organized->lines[index].words[0].token = (char*) malloc(WORD_SIZE * sizeof(char));
     strcpy(organized->lines[index].words[0].value, "}");
-    strcpy(organized->lines[index].words[0].token, SIGN);
+    strcpy(organized->lines[index].words[0].token, BLOCK_END);
     organized->lines[index].size = 1;
 
     // sets line after that

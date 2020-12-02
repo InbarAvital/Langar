@@ -34,7 +34,7 @@ int main() {
     class->varsSize = (int *) malloc(sizeof(int));
     *class->varsSize = 0;
     char* assCode = compileClass(class);
-    printLexered(organized);
+    //printLexered(organized);
     printf("%s\n", assCode);
 }
 

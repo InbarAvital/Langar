@@ -9,8 +9,8 @@
  *         are already in the stack.
  */
 char* addTemplate() {
-    char* add = "    pop     eax\n"
-                "    pop     ebx\n"
+    char* add = "    pop     ebx\n"
+                "    pop     eax\n"
                 "    add     eax, ebx\n"
                 "    push    eax\n";
     return add;
@@ -21,8 +21,8 @@ char* addTemplate() {
  *         are already in the stack.
  */
 char* subTemplate() {
-    char* sub = "    pop     eax\n"
-                "    pop     ebx\n"
+    char* sub = "    pop     ebx\n"
+                "    pop     eax\n"
                 "    sub     eax, ebx\n"
                 "    push    eax\n";
     return sub;
@@ -33,8 +33,8 @@ char* subTemplate() {
  *         are already in the stack.
  */
 char* mulTemplate() {
-    char* mul = "    pop     eax\n"
-                "    pop     ebx\n"
+    char* mul = "    pop     ebx\n"
+                "    pop     eax\n"
                 "    imul    eax, ebx\n"
                 "    push    eax\n";
     return mul;
@@ -45,8 +45,8 @@ char* mulTemplate() {
  *         are already in the stack.
  */
 char* divTemplate() {
-    char* div = "    pop     eax\n"
-                "    pop     ebx\n"
+    char* div = "    pop     ebx\n"
+                "    pop     eax\n"
                 "    idiv    eax, ebx\n"
                 "    push    eax\n";
     return div;
@@ -95,8 +95,8 @@ char* updateLocalVarFromValueTemplate(int offset, int value, char* sizePtr) {
  * @return equal(=) template in assembly
  */
 char* equalsTemplate() {
-    char* str = "    pop     eax\n"
-                "    pop     ebx\n"
+    char* str = "    pop     ebx\n"
+                "    pop     eax\n"
                 "    cmp     eax, ebx\n"
                 "    cmove   eax, 1\n"
                 "    cmovne  eax, 0\n"
@@ -108,11 +108,11 @@ char* equalsTemplate() {
  * @return not equal(!=) template in assembly
  */
 char* notEqualsTemplate() {
-    char* str = "    pop     eax\n"
-                "    pop     ebx\n"
+    char* str = "    pop     ebx\n"
+                "    pop     eax\n"
                 "    cmp     eax, ebx\n"
-                "    cmove   eax, 0\n"
                 "    cmovne  eax, 1\n"
+                "    cmove   eax, 0\n"
                 "    push    eax\n";
     return str;
 }
@@ -121,8 +121,8 @@ char* notEqualsTemplate() {
  * @return greater equal(>=) template in assembly
  */
 char* greaterEqualsTemplate() {
-    char* str = "    pop     eax\n"
-                "    pop     ebx\n"
+    char* str = "    pop     ebx\n"
+                "    pop     eax\n"
                 "    cmp     eax, ebx\n"
                 "    cmovge  eax, 1\n"
                 "    cmovl   eax, 0\n"
@@ -134,8 +134,8 @@ char* greaterEqualsTemplate() {
  * @return less equal(<=) template in assembly
  */
 char* lessEqualsTemplate() {
-    char* str = "    pop     eax\n"
-                "    pop     ebx\n"
+    char* str = "    pop     ebx\n"
+                "    pop     eax\n"
                 "    cmp     eax, ebx\n"
                 "    cmovle  eax, 1\n"
                 "    cmovg   eax, 0\n"
@@ -147,11 +147,11 @@ char* lessEqualsTemplate() {
  * @return greater(>) template in assembly
  */
 char* greaterTemplate() {
-    char* str = "    pop     eax\n"
-                "    pop     ebx\n"
+    char* str = "    pop     ebx\n"
+                "    pop     eax\n"
                 "    cmp     eax, ebx\n"
-                "    cmovle  eax, 1\n"
-                "    cmovg   eax, 0\n"
+                "    cmovg   eax, 1\n"
+                "    cmovle  eax, 0\n"
                 "    push    eax\n";
     return str;
 }
@@ -160,8 +160,8 @@ char* greaterTemplate() {
  * @return less(<) template in assembly
  */
 char* lessTemplate() {
-    char* str = "    pop     eax\n"
-                "    pop     ebx\n"
+    char* str = "    pop     ebx\n"
+                "    pop     eax\n"
                 "    cmp     eax, ebx\n"
                 "    cmovl   eax, 1\n"
                 "    cmovge  eax, 0\n"
@@ -207,9 +207,10 @@ char* orTemplate() {
  * @return if template in assembly
  */
 char* ifStatementTemplate(char* label) {
-    char* str = "    pop     eax\n"
+    char* str = (char*) malloc(WORD_SIZE * sizeof(char));
+    strcpy(str, "    pop     eax\n"
                 "    cmp     eax, 0\n"
-                "    je      ";
+                "    je      ");
     strcat(str, label);
     strcat(str, "\n");
     return str;

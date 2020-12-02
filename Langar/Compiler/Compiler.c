@@ -37,7 +37,11 @@ char* compileClass(Class* class) {
  * @return an assembly of the function by using the templates.
  */
 char* compileFunc(Func* func) {
-    int condCounter = 0;
+    // this queue will get conditions and loops inside to recognize when one is ending
+    LexLine* queue = (LexLine*)malloc(sizeof(LexCode));
+    queue->words = (LexObj*)malloc(sizeof(LexObj) * WORD_SIZE);
+    queue->size = 0;
+    // starting writing the code
     char* asCode = (char*)malloc(MAX_TEXT * sizeof(char));
     strcat(asCode, func->name);
     strcat(asCode, ":\n"
@@ -79,8 +83,10 @@ char* compileFunc(Func* func) {
         }
         // conditions
         else if(!strcmp(func->code.lines[i].type, CONDITION)) {
-            strcat(asCode, compileCondition(&func, i));
-            condCounter++;
+            queue->words[queue->size].token = CONDITION;
+            queue->size++;
+            strcat(asCode, compileCondition(func, i));
+            i++;
         }
         // return value
         else if(!strcmp(func->code.lines[i].type, RETURN)) {
@@ -90,11 +96,45 @@ char* compileFunc(Func* func) {
             }
             strcat(asCode, compiledReturn);
         }
+        // it is a loop
+        else if(!strcmp(func->code.lines[i].type, LOOP)) {
+            queue->words[queue->size].token = LOOP;
+            queue->size++;
+        }
         // a block ended
-        else if(!strcmp(func->code.lines[i].type, BLOCK_END)) {
+        else if(!strcmp(func->code.lines[i].type, BLOCK) &&
+                !strcmp(func->code.lines[i].words[0].token, BLOCK_END)) {
             // if an if statement just ended
-            if(insideCond)
-            getConditionLength
+            queue->size--;
+            // if we exited a condition
+            if(!strcmp(queue->words[queue->size].token, CONDITION)) {
+                func->cLabel++;
+                char label[WORD_SIZE];
+                char fullLabel[WORD_SIZE];
+                int labelInc = getConditionLength(func, i - 2);
+                if(labelInc != 0) {
+                    // creating the jmp to end of conditions
+                    sprintf(label, "%d", func->cLabel + labelInc);
+                    strcpy(fullLabel, func->name);
+                    strcat(fullLabel, "_c_");
+                    strcat(fullLabel, label);
+                    strcat(asCode, "    jmp     ");
+                    strcat(asCode, fullLabel);
+                    strcat(asCode, "\n");
+                }
+                // creating the new label
+                strcat(asCode, "\n");
+                sprintf(label, "%d", func->cLabel);
+                strcpy(fullLabel, func->name);
+                strcat(fullLabel, "_c_");
+                strcat(fullLabel, label);
+                strcat(fullLabel, ":\n");
+                strcat(asCode, fullLabel);
+            }
+            // if we exited a loop
+            else if(!strcmp(queue->words[queue->size].token, LOOP)) {
+
+            }
         }
     }
     strcat(asCode, "    mov     esp, ebp\n"
@@ -404,48 +444,65 @@ char* compileUpdateLocalVar(Func* func, int index) {
  * @return - the char of the if statement
  */
 char* compileCondition(Func* func, int index) {
-    char labelStr[WORD_SIZE];
-    sprintf(labelStr, "%d", func->cLabel);
-    func->cLabel++;
-    char* asCode = (char*)malloc(MAX_TEXT * sizeof(char));
-    strcat(asCode, compileExpression(subLine(&func->code.lines[index], 2,
-            func->code.lines[index].size -2), func));
-    char* label = (char*)malloc(WORD_SIZE * sizeof(char));
-    strcat(label, func->name);
-    strcat(label, "_c_");
-    strcat(label, labelStr);
-    strcat(asCode, ifStatementTemplate(label));
-    return asCode;
+    if(strcmp(func->code.lines[index].words[0].value,"else")) {
+        char labelStr[WORD_SIZE];
+        char* fullLabel = (char*)malloc(sizeof(char) * WORD_SIZE);
+        int condAmount = getInsideCondition(func, index);
+        char* asCode = (char*)malloc(MAX_TEXT * sizeof(char));
+        strcat(asCode, compileExpression(subLine(&func->code.lines[index], 2,
+                                                 func->code.lines[index].size -2), func));
+        sprintf(labelStr, "%d", func->cLabel + condAmount + 1);
+        strcpy(fullLabel, func->name);
+        strcat(fullLabel, "_c_");
+        strcat(fullLabel, labelStr);
+        strcat(asCode, ifStatementTemplate(fullLabel));
+        return asCode;
+    }
+    return "";
 }
 
 /**
  * @param func - the function in which the condition appears.
  * @param index - the index of the line in which the condition starts.
- * @return - the number of conditions that appears (including this one)
+ * @return - the number of conditions that appears (not including this one)
  *           until the end of the condition and it's elses.
  */
 int getConditionLength(Func* func, int index) {
-    int i, j;
-    int counter = 1;
-    int lenOfIf = getEndOfBlock(&func->code, index + 2);
+    int i;
+    int counter = 0;
+    int lenOfIf = getEndOfBlock(&func->code, index + 1);
     int lenOfElif = 0;
     // counts the if's inside this current if.
+    counter += getInsideCondition(func, index);
+    // counts the elif/else and the if's inside them
+    for(i = lenOfIf + 1; i < func->code.size; i++) {
+        if(!strcmp(func->code.lines[i].type, CONDITION) &&
+                strcmp(func->code.lines[i].words[0].value, "if")) {
+            lenOfElif = getEndOfBlock(&func->code, i + 1);
+            counter++;
+            counter += getInsideCondition(func, i);
+            i = lenOfElif;
+        } else {
+            break;
+        }
+    }
+    return counter;
+}
+
+/**
+ * @param func - the function in which the condition appears.
+ * @param index - the index of the line in which the condition starts.
+ * @return - the number of conditions that appears inside the condition
+ *           that starts in index
+ */
+int getInsideCondition(Func* func, int index) {
+    int i;
+    int counter = 0;
+    int lenOfIf = getEndOfBlock(&func->code, index + 1);
     for(i = index + 2; i <= lenOfIf; i++) {
         if(!strcmp(func->code.lines[i].type,CONDITION)) {
             counter++;
         }
     }
-    // counts the elif/else and the if's inside them
-    for(i = lenOfIf + 2; i < func->code.size; i++) {
-        if(!strcmp(func->code.lines[i].type,CONDITION) &&
-                strcmp(func->code.lines[i].type, "if")) {
-            lenOfElif = getEndOfBlock(&func->code, i + 2);
-            for(j = i + 2; i <= lenOfElif; i++) {
-                if(!strcmp(func->code.lines[j].type,CONDITION)) {
-                    counter++;
-                }
-            }
-            i = lenOfElif + 2;
-        }
-    }
+    return counter;
 }

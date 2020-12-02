@@ -86,7 +86,7 @@ int getEndOfBlock(LexCode* code, int index) {
 
     while(count != 0) {
         if(!strcmp(code->lines[line].type, BLOCK)) {
-            if(!strcmp(code->lines[line].words[0].value, "{")) {
+            if(!strcmp(code->lines[line].words[0].token, BLOCK_START)) {
                 count++;
             } else {
                 count--;

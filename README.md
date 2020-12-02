@@ -38,10 +38,10 @@ Let's see how it goes!
      - [X] local Variables
      - [ ] global Variables
      - [ ] arrays
- - [ ] Conditions
-     - [ ] if
-     - [ ] else
-     - [ ] elif
+ - [X] Conditions
+     - [X] if
+     - [X] else
+     - [X] elif
  - [ ] Loops
      - [ ] while
      - [ ] for
@@ -94,6 +94,23 @@ void returnTest() {
     int b = 2;
     a = b + 5;
 }
+
+int conditions() {
+    // conditions example
+    int a = 10;
+    int b = 9;
+    if(a > 8) {
+        if(a > 7) {
+            a = 6;
+        }
+        a = 5;
+    } elif(b > 4) {
+        b = 3;
+    } else {
+        b = 2;
+    }
+    b = 1;
+}
 ```
 The assembly code I return:
 ```asm
@@ -103,23 +120,23 @@ expressions:
     sub     esp, 4
     push    5
     push    3
-    pop     eax
     pop     ebx
+    pop     eax
     add     eax, ebx
     push    eax
     push    10
     push    2
-    pop     eax
     pop     ebx
+    pop     eax
     idiv    eax, ebx
     push    eax
     push    7
-    pop     eax
     pop     ebx
+    pop     eax
     imul    eax, ebx
     push    eax
-    pop     eax
     pop     ebx
+    pop     eax
     sub     eax, ebx
     push    eax
     pop     eax
@@ -150,6 +167,81 @@ variables:
 returnTest:
     push    ebp
     mov     ebp, esp
+    mov     esp, ebp
+    pop     ebp
+    ret
+
+conditions:
+    push    ebp
+    mov     ebp, esp
+    sub     esp, 8
+    push    10
+    pop     eax
+    mov     DWORD PTR[ebp - 4], eax
+    push    9
+    pop     eax
+    mov     DWORD PTR[ebp - 8], eax
+    mov     ebx, DWORD PTR[ebp - 4]
+    push    ebx
+    push    8
+    pop     ebx
+    pop     eax
+    cmp     eax, ebx
+    cmovg   eax, 1
+    cmovle  eax, 0
+    push    eax
+    pop     eax
+    cmp     eax, 0
+    je      conditions_c_2
+    mov     ebx, DWORD PTR[ebp - 4]
+    push    ebx
+    push    7
+    pop     ebx
+    pop     eax
+    cmp     eax, ebx
+    cmovg   eax, 1
+    cmovle  eax, 0
+    push    eax
+    pop     eax
+    cmp     eax, 0
+    je      conditions_c_1
+    push    6
+    pop     eax
+    mov     DWORD PTR[ebp - 4], eax
+
+conditions_c_1:
+    push    5
+    pop     eax
+    mov     DWORD PTR[ebp - 4], eax
+    jmp     conditions_c_4
+
+conditions_c_2:
+    mov     ebx, DWORD PTR[ebp - 8]
+    push    ebx
+    push    4
+    pop     ebx
+    pop     eax
+    cmp     eax, ebx
+    cmovg   eax, 1
+    cmovle  eax, 0
+    push    eax
+    pop     eax
+    cmp     eax, 0
+    je      conditions_c_3
+    push    3
+    pop     eax
+    mov     DWORD PTR[ebp - 8], eax
+    jmp     conditions_c_4
+
+conditions_c_3:
+    push    2
+    pop     eax
+    mov     DWORD PTR[ebp - 8], eax
+
+conditions_c_4:
+    push    1
+    pop     eax
+    mov     DWORD PTR[ebp - 8], eax
     mov     esp, ebp
     pop     ebp
     ret
