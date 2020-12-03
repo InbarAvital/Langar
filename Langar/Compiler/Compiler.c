@@ -108,7 +108,7 @@ char* compileExpression(LexLine* expression, Func* func) {
         }
         // or (||)
         else if(!strcmp(postfixLine->words[i].token, OR)) {
-            strcat(asCode, notTemplate());
+            strcat(asCode, orTemplate());
         }
         // and (&&)
         else if(!strcmp(postfixLine->words[i].token, AND)) {

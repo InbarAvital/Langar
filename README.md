@@ -42,6 +42,7 @@ Let's see how it goes!
      - [X] if
      - [X] else
      - [X] elif
+     - [X] \>=, <=, >, <, ==, !=, &&, ||
  - [ ] Loops
      - [ ] while
      - [ ] for
@@ -99,17 +100,18 @@ int conditions() {
     // conditions example
     int a = 10;
     int b = 9;
-    if(a > 8) {
-        if(a > 7) {
+    if(a > 8 || b != 9) {
+        if(a < 7) {
             a = 6;
         }
         a = 5;
-    } elif(b > 4) {
+    } elif(b >= 4 && a==10) {
         b = 3;
     } else {
         b = 2;
     }
     b = 1;
+    return a;
 }
 ```
 The assembly code I return:
@@ -190,6 +192,19 @@ conditions:
     cmovg   eax, 1
     cmovle  eax, 0
     push    eax
+    mov     ebx, DWORD PTR[ebp - 8]
+    push    ebx
+    push    9
+    pop     ebx
+    pop     eax
+    cmp     eax, ebx
+    cmovne  eax, 1
+    cmove   eax, 0
+    push    eax
+    pop     eax
+    pop     ebx
+    or      eax, ebx
+    push    eax
     pop     eax
     cmp     eax, 0
     je      conditions_c_2
@@ -199,8 +214,8 @@ conditions:
     pop     ebx
     pop     eax
     cmp     eax, ebx
-    cmovg   eax, 1
-    cmovle  eax, 0
+    cmovl   eax, 1
+    cmovge  eax, 0
     push    eax
     pop     eax
     cmp     eax, 0
@@ -222,8 +237,21 @@ conditions_c_2:
     pop     ebx
     pop     eax
     cmp     eax, ebx
-    cmovg   eax, 1
-    cmovle  eax, 0
+    cmovge  eax, 1
+    cmovl   eax, 0
+    push    eax
+    mov     ebx, DWORD PTR[ebp - 4]
+    push    ebx
+    push    10
+    pop     ebx
+    pop     eax
+    cmp     eax, ebx
+    cmove   eax, 1
+    cmovne  eax, 0
+    push    eax
+    pop     eax
+    pop     ebx
+    and     eax, ebx
     push    eax
     pop     eax
     cmp     eax, 0
@@ -242,6 +270,7 @@ conditions_c_4:
     push    1
     pop     eax
     mov     DWORD PTR[ebp - 8], eax
+    mov     eax, DWORD PTR[ebp - 4]
     mov     esp, ebp
     pop     ebp
     ret
