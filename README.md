@@ -46,6 +46,7 @@ Let's see how it goes!
  - [ ] Loops
      - [ ] while
      - [ ] for
+ - [ ] Sections
  - [ ] Classes
  - [ ] Includes
  - [ ] Semantic checks -
