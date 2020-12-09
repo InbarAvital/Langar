@@ -85,12 +85,10 @@ int getEndOfBlock(LexCode* code, int index) {
     int line = index + 1;
 
     while(count != 0) {
-        if(!strcmp(code->lines[line].type, BLOCK)) {
-            if(!strcmp(code->lines[line].words[0].token, BLOCK_START)) {
-                count++;
-            } else {
-                count--;
-            }
+        if(!strcmp(code->lines[line].words[0].token, BLOCK_START)) {
+            count++;
+        } else if(!strcmp(code->lines[line].words[0].token, BLOCK_END)) {
+            count--;
         }
         line++;
     }
@@ -110,7 +108,9 @@ LexLine* subLine(LexLine* line, int start, int end) {
     subline->size = end - start + 1;
     subline->words = (LexObj*) malloc(subline->size * sizeof(LexObj));
     subline->type = (char*) malloc(TYPE_SIZE * sizeof(char));
-    strcpy(subline->type, line->type);
+    if(line->type != NULL) {
+        strcpy(subline->type, line->type);
+    }
     int i;
     // sets the lines before the indexed line to stay the same
     for(i = start; i <= end; i++) {

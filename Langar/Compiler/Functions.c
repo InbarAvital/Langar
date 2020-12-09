@@ -10,9 +10,9 @@
  */
 char* compileFunc(Func* func) {
     // this queue will get conditions and loops inside to recognize when one is ending
-    LexLine* queue = (LexLine*)malloc(sizeof(LexCode));
-    queue->words = (LexObj*)malloc(sizeof(LexObj) * WORD_SIZE);
-    queue->size = 0;
+    QueueCL* queueCl = (QueueCL*)malloc(sizeof(QueueCL));
+    queueCl->object = (QObject*)malloc(sizeof(QObject) * WORD_AMOUNT);
+    queueCl->size = 0;
     // starting writing the code
     char* asCode = (char*)malloc(MAX_TEXT * sizeof(char));
     strcat(asCode, func->name);
@@ -30,7 +30,7 @@ char* compileFunc(Func* func) {
                 break;
             }
         }
-            // initialize variable
+        // initialize variable
         else if(!strcmp(func->code.lines[i].type, INIT_VAR)) {
             // adds the var to this func's var list
             compileInitVar(func, i);
@@ -49,18 +49,18 @@ char* compileFunc(Func* func) {
         if(!strcmp(func->code.lines[i].type, INIT_VAR)) {
             // we already dealt with it - we skip
         }
-            // updates variable
+        // updates variable
         else if(!strcmp(func->code.lines[i].type, UPDATE_VAR)) {
             strcat(asCode, compileUpdateLocalVar(func, i));
         }
-            // conditions
+        // conditions
         else if(!strcmp(func->code.lines[i].type, CONDITION)) {
-            queue->words[queue->size].token = CONDITION;
-            queue->size++;
+            queueCl->object[queueCl->size].type = CONDITION;
+            queueCl->size++;
             strcat(asCode, compileCondition(func, i));
             i++;
         }
-            // return value
+        // return value
         else if(!strcmp(func->code.lines[i].type, RETURN)) {
             char* compiledReturn = compileReturn(&func->code.lines[i], func);
             if(compiledReturn == NULL) {
@@ -68,18 +68,22 @@ char* compileFunc(Func* func) {
             }
             strcat(asCode, compiledReturn);
         }
-            // it is a loop
+        // it is a loop
         else if(!strcmp(func->code.lines[i].type, LOOP)) {
-            queue->words[queue->size].token = LOOP;
-            queue->size++;
+            queueCl->object[queueCl->size].type = LOOP;
+            queueCl->object[queueCl->size].label = func->lLabel + 1;
+            queueCl->size++;
+            strcat(asCode, compileLoop(func, i));
+            func->lLabel++;
+            i++;
         }
-            // a block ended
+        // a block ended
         else if(!strcmp(func->code.lines[i].type, BLOCK) &&
                 !strcmp(func->code.lines[i].words[0].token, BLOCK_END)) {
             // if an if statement just ended
-            queue->size--;
-            // if we exited a condition
-            if(!strcmp(queue->words[queue->size].token, CONDITION)) {
+            queueCl->size--;
+            // if we exit a condition
+            if(!strcmp(queueCl->object[queueCl->size].type, CONDITION)) {
                 func->cLabel++;
                 char label[WORD_SIZE];
                 char fullLabel[WORD_SIZE];
@@ -103,9 +107,27 @@ char* compileFunc(Func* func) {
                 strcat(fullLabel, ":\n");
                 strcat(asCode, fullLabel);
             }
-                // if we exited a loop
-            else if(!strcmp(queue->words[queue->size].token, LOOP)) {
-
+            // if we exit a loop
+            else if(!strcmp(queueCl->object[queueCl->size].type, LOOP)) {
+                func->lLabel++;
+                char label[WORD_SIZE];
+                char fullLabel[WORD_SIZE];
+                // creating the jmp to the beginning of the loop
+                sprintf(label, "%d", queueCl->object[queueCl->size].label);
+                strcpy(fullLabel, func->name);
+                strcat(fullLabel, "_l_");
+                strcat(fullLabel, label);
+                strcat(asCode, "    jmp     ");
+                strcat(asCode, fullLabel);
+                strcat(asCode, "\n");
+                strcat(asCode, "\n");
+                // creating the new label
+                sprintf(label, "%d", func->lLabel);
+                strcpy(fullLabel, func->name);
+                strcat(fullLabel, "_l_");
+                strcat(fullLabel, label);
+                strcat(fullLabel, ":\n");
+                strcat(asCode, fullLabel);
             }
         }
     }
@@ -115,7 +137,6 @@ char* compileFunc(Func* func) {
                    "\n");
     return asCode;
 }
-
 /**
  * @param line - a line in which a function is being initialized
  * @return a function that was initialized according to the line given.

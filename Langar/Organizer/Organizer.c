@@ -62,6 +62,11 @@ LexCode* organize(LexCode* code) {
         if(organized->lines[i].size > 1 && !strcmp(organized->lines[i].words[0].value, "}")) {
             organized = organizeEndBlock(organized, i);
         }
+        // for loop will be replaced to a while loop
+        if(!strcmp(organized->lines[i].words[0].value, "for")) {
+            organized = organizeForLoop(organized, i);
+            i--;
+        }
         // deletes a comment
         if(!strcmp(organized->lines[i].words[0].value, "/") &&
                 !strcmp(organized->lines[i].words[1].value, "/")) {
@@ -368,4 +373,98 @@ LexCode* organizeEndBlock(LexCode* code, int index) {
         organized->lines[i+1] = *copyLexLine(&code->lines[i]);
     }
     return organized;
+}
+
+LexCode* organizeForLoop(LexCode* code, int index) {
+    LexCode* organized = (LexCode*) malloc(sizeof(LexCode*));
+    organized->lines = (LexLine*) malloc(LINE_AMOUNT * sizeof(LexLine));
+    organized->size = code->size + 2;
+    int end = getEndOfBlock(code, index + 1);
+    int i;
+    // sets the lines before the indexed line to stay the same;
+    for(i = 0; i < index; i++) {
+        organized->lines[i] = *copyLexLine(&code->lines[i]);
+    }
+    // adds the new init line
+    organized->lines[index].words = (LexObj*) malloc(WORD_AMOUNT * sizeof(LexObj));
+    organized->lines[index] = *getForIndex(&code->lines[index], 1);
+    // creates the new while line
+    organized->lines[index + 1].words = (LexObj*) malloc(WORD_AMOUNT * sizeof(LexObj));
+    organized->lines[index + 1] = *getForIndex(&code->lines[index], 2);
+
+    // sets the rest of the lines to stay the same until the end of the loop.
+    for(i = index + 1; i < end; i++) {
+        organized->lines[i+1] = *copyLexLine(&code->lines[i]);
+    }
+    // adds the new init iteration line
+    organized->lines[end + 1].words = (LexObj*) malloc(WORD_AMOUNT * sizeof(LexObj));
+    organized->lines[end + 1] = *getForIndex(&code->lines[index], 3);
+    // sets the rest of the lines to stay the same.
+    for(i = end; i < code->size; i++) {
+        organized->lines[i+2] = *copyLexLine(&code->lines[i]);
+    }
+    return organized;
+}
+
+/**
+ * @param line - the line in which the for loop is in.
+ * @param index - I will give an example: if we get this line:
+ *          for(int i = 0; i < y; i++)
+ *          if index is 1 we will return - int i = 0;
+ *          if index is 2 we will return - while(i < y)
+ *          else - i++;
+ */
+LexLine* getForIndex(LexLine* line, int index) {
+    int i;
+    int index1 = 0, index2 = 0;
+    LexLine* toReturn;
+    // calculating the indexes in which the expression is in.
+    for(i = 0; i < line->size ; i++) {
+        if(!strcmp(line->words[i].value, ";")) {
+            if(index1 == 0) {
+                index1 = i;
+            } else {
+                index2 = i;
+            }
+        }
+    }
+    // the init
+    if(index == 1) {
+        toReturn = subLine(line, 2, index1);
+    }
+    // the while loop
+    else if (index == 2) {
+        LexLine* expression = subLine(line, index1 + 1, index2 - 1);
+        toReturn = (LexLine*) malloc(LINE_AMOUNT * sizeof(LexLine));
+        toReturn->words = (LexObj*) malloc(LINE_AMOUNT * sizeof(LexObj));
+        toReturn->size = expression->size + 3;
+        // while word
+        toReturn->words[0].value = (char*) malloc(WORD_SIZE * sizeof(char));
+        toReturn->words[0].token = (char*) malloc(WORD_SIZE * sizeof(char));
+        strcpy(toReturn->words[0].value, "while");
+        strcpy(toReturn->words[0].token, LOOP);
+        // (
+        toReturn->words[1].value = (char*) malloc(WORD_SIZE * sizeof(char));
+        toReturn->words[1].token = (char*) malloc(WORD_SIZE * sizeof(char));
+        strcpy(toReturn->words[1].value, "(");
+        strcpy(toReturn->words[1].token, SIGN);
+        for(i = 0; i < expression->size; i++) {
+            toReturn->words[i+2] = *copyLexObj(&expression->words[i]);
+        }
+        // )
+        toReturn->words[toReturn->size - 1].value = (char*) malloc(WORD_SIZE * sizeof(char));
+        toReturn->words[toReturn->size - 1].token = (char*) malloc(WORD_SIZE * sizeof(char));
+        strcpy(toReturn->words[toReturn->size - 1].value, ")");
+        strcpy(toReturn->words[toReturn->size - 1].token, SIGN);
+    }
+    // the iteration expression
+    else {
+        toReturn = subLine(line, index2 + 1, line->size - 2);
+        toReturn->words[toReturn->size].value = (char*) malloc(sizeof(char) * WORD_SIZE);
+        toReturn->words[toReturn->size].token = (char*) malloc(sizeof(char) * WORD_SIZE);
+        strcpy(toReturn->words[toReturn->size].value, ";");
+        strcpy(toReturn->words[toReturn->size].token, CUT);
+        toReturn->size++;
+    }
+    return toReturn;
 }

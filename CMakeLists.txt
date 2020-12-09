@@ -21,4 +21,5 @@ add_executable(MyLanguage
         Langar/Shunting-yard/ShuntingYard.c
         Langar/Compiler/Variables.c
         Langar/Compiler/Conditions.c
-        Langar/Compiler/Functions.c)
+        Langar/Compiler/Functions.c
+        Langar/Compiler/Loops.c)

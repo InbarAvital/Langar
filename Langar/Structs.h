@@ -38,4 +38,15 @@ typedef struct Classes {
     LexCode code;
 } Class;
 
+// the queue for the conditions and loops
+typedef struct Queue_Object {
+    char* type;
+    int label;
+} QObject;
+
+typedef struct Queue_Conditions_Loops {
+    QObject* object;
+    int size;
+} QueueCL;
+
 #endif //MYLANGUAGE_STRUCTS_H

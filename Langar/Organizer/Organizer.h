@@ -15,4 +15,6 @@ LexCode* organizeBlock(LexCode* code, int index);
 LexLine* organizeDoubleSigns(LexLine* line, int index);
 LexCode* deleteLine(LexCode* code, int index);
 LexCode* organizeEndBlock(LexCode* code, int index);
+LexCode* organizeForLoop(LexCode* code, int index);
+LexLine* getForIndex(LexLine* line, int index);
 #endif //MYLANGUAGE_ORGANIZER_H

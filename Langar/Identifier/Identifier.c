@@ -43,7 +43,7 @@ void identifyLine(LexLine* line) {
         strcpy(line->type, CONDITION);
         return;
     }
-    // while or for
+    // while
     if(!strcmp(line->words[0].token, LOOP)) {
         strcpy(line->type, LOOP);
         return;

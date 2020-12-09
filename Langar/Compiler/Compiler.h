@@ -28,4 +28,8 @@ char* compileCondition(Func* func, int index);
 int getConditionLength(Func* func, int index);
 int getInsideCondition(Func* func, int index);
 
+// Loops
+char* compileLoop(Func* func, int index);
+int getInsideLoop(Func* func, int index);
+
 #endif //MYLANGUAGE_COMPILER_H

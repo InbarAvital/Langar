@@ -9,7 +9,7 @@ Take into consideration that I do not really have OOP in C, but I still wanted t
 
 Let's see how it goes!
 
-### What I have so far regarding processing the code given to me:
+### What I have so far regarding the pre-processing of the code:
  - [X] Tokenizer - splits the code to tokens
  - [X] Lexer - take the tokens code and add info
  - [X] Organizer - organize the code to make it easier when we start compiling
@@ -43,9 +43,9 @@ Let's see how it goes!
      - [X] else
      - [X] elif
      - [X] \>=, <=, >, <, ==, !=, &&, ||
- - [ ] Loops
-     - [ ] while
-     - [ ] for
+ - [X] Loops
+     - [X] while
+     - [X] for
  - [ ] Sections
  - [ ] Classes
  - [ ] Includes
@@ -54,7 +54,7 @@ Let's see how it goes!
           
 ## How my code works:
 
-**Processing the code:**
+**Pre-Processing the code:**
  1. I go over the code given to me, and split it into tokens using the `Tokenizer`.
  2. I go over each token and give it a "role", for example - int is a 'type', + is an 'operator' etc. I use the `Lexer` to do so.
  3. I organize the code using the `Organizer`, to make it easier for me to compile. I delete empty lines, and does stuff like splitting 'int a = 5;' to 'int a;' and 'a = 5;'. You can go over the Organizer to see what other stuff I do.
@@ -113,6 +113,22 @@ int conditions() {
     }
     b = 1;
     return a;
+}
+
+int loops() {
+    // loops example
+    int x = 0;
+    int y = 0;
+    while(x < 2) {
+        while(y < 2) {
+            y++;
+        }
+        x++;
+    }
+    for(int i = 0; i < x; i++) {
+        x--;
+    }
+    return x;
 }
 ```
 The assembly code I return:
@@ -271,6 +287,112 @@ conditions_c_4:
     push    1
     pop     eax
     mov     DWORD PTR[ebp - 8], eax
+    mov     eax, DWORD PTR[ebp - 4]
+    mov     esp, ebp
+    pop     ebp
+    ret
+
+loops:
+    push    ebp
+    mov     ebp, esp
+    sub     esp, 12
+    push    0
+    pop     eax
+    mov     DWORD PTR[ebp - 4], eax
+    push    0
+    pop     eax
+    mov     DWORD PTR[ebp - 8], eax
+
+loops_l_1:
+    mov     ebx, DWORD PTR[ebp - 4]
+    push    ebx
+    push    2
+    pop     ebx
+    pop     eax
+    cmp     eax, ebx
+    cmovl   eax, 1
+    cmovge  eax, 0
+    push    eax
+    pop     eax
+    cmp     eax, 0
+    je      loops_l_4
+
+loops_l_2:
+    mov     ebx, DWORD PTR[ebp - 8]
+    push    ebx
+    push    2
+    pop     ebx
+    pop     eax
+    cmp     eax, ebx
+    cmovl   eax, 1
+    cmovge  eax, 0
+    push    eax
+    pop     eax
+    cmp     eax, 0
+    je      loops_l_3
+    mov     ebx, DWORD PTR[ebp - 8]
+    push    ebx
+    push    1
+    pop     ebx
+    pop     eax
+    add     eax, ebx
+    push    eax
+    pop     eax
+    mov     DWORD PTR[ebp - 8], eax
+    jmp     loops_l_2
+
+loops_l_3:
+    mov     ebx, DWORD PTR[ebp - 4]
+    push    ebx
+    push    1
+    pop     ebx
+    pop     eax
+    add     eax, ebx
+    push    eax
+    pop     eax
+    mov     DWORD PTR[ebp - 4], eax
+    jmp     loops_l_1
+
+loops_l_4:
+    push    0
+    pop     eax
+    mov     DWORD PTR[ebp - 12], eax
+
+loops_l_5:
+    mov     ebx, DWORD PTR[ebp - 12]
+    push    ebx
+    mov     ebx, DWORD PTR[ebp - 4]
+    push    ebx
+    pop     ebx
+    pop     eax
+    cmp     eax, ebx
+    cmovl   eax, 1
+    cmovge  eax, 0
+    push    eax
+    pop     eax
+    cmp     eax, 0
+    je      loops_l_6
+    mov     ebx, DWORD PTR[ebp - 4]
+    push    ebx
+    push    1
+    pop     ebx
+    pop     eax
+    sub     eax, ebx
+    push    eax
+    pop     eax
+    mov     DWORD PTR[ebp - 4], eax
+    mov     ebx, DWORD PTR[ebp - 12]
+    push    ebx
+    push    1
+    pop     ebx
+    pop     eax
+    add     eax, ebx
+    push    eax
+    pop     eax
+    mov     DWORD PTR[ebp - 12], eax
+    jmp     loops_l_5
+
+loops_l_6:
     mov     eax, DWORD PTR[ebp - 4]
     mov     esp, ebp
     pop     ebp
