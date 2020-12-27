@@ -46,8 +46,9 @@ Let's see how it goes!
  - [X] Loops
      - [X] while
      - [X] for
+ - [ ] Structs
+ - [ ] Switch Case
  - [ ] Sections
- - [ ] Classes
  - [ ] Includes
  - [ ] Semantic checks -
      - will add later
